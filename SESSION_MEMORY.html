@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta charset="UTF-8"><title>AI Platform - 会话记忆</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:#f5f6fa;color:#2d3436;padding:32px;max-width:960px;margin:auto;line-height:1.7}
+h1{font-size:1.3rem;border-bottom:2px solid #667eea;padding-bottom:8px;margin-bottom:20px}
+h2{font-size:1rem;color:#5c6bc0;margin:24px 0 8px}
+h3{font-size:.85rem;color:#636e72;margin:16px 0 4px}
+p,li{font-size:.82rem}
+code{background:#eef0f6;padding:1px 5px;border-radius:3px;font-size:.78rem}
+pre{background:#2d3436;color:#dfe6e9;padding:12px;border-radius:8px;overflow-x:auto;font-size:.75rem;line-height:1.5}
+.tag{display:inline-block;padding:1px 8px;border-radius:8px;font-size:.68rem;background:#e3f2fd;color:#1565c0;margin:0 2px}
+.tag.done{background:#e8f5e9;color:#2e7d32}
+.tag.wip{background:#fff8e1;color:#f57f17}
+.tag.arch{background:#f3e5f5;color:#7b1fa2}
+table{width:100%;border-collapse:collapse;font-size:.78rem;margin:8px 0}
+th,td{padding:6px 10px;text-align:left;border-bottom:1px solid #eef0f6}
+th{background:#f8f9fc;color:#636e72;font-weight:600;font-size:.72rem}
+.block{background:#fff;border-radius:10px;padding:12px 16px;margin:8px 0;border:1px solid #eef0f6}
+.block .l{color:#b2bec3;font-size:.72rem}
+</style>
+</head>
+<body>
+
+<h1>✦ AI Platform — 项目会话记忆</h1>
+<p style="color:#636e72;margin-top:-12px;font-size:.78rem">
+生成时间: 2026-05-19T18:00+08:00 | 项目路径: <code>D:\项目代码\space-exploration\ai-platform</code>
+</p>
+
+<h2>一、项目定位</h2>
+<p>一个 <strong>单进程、零外部依赖</strong> 的 AI 消息平台，后端集成 QQ(NapCat) 和 Web 管理后台。用户可以创建多个 Agent（角色/人设），LangChain 编排 LLM 调用，SQLite 存储全部数据。</p>
+
+<div class="block">
+<span class="tag arch">架构原则</span>
+<li>单进程 Express 服务，无需 Docker / K8s</li>
+<li>存储仅依赖 <code>sql.js</code>（纯 JS SQLite）+ 文件系统 <code>data/</code> 目录</li>
+<li>LLM 框架: LangChain (ChatOpenAI)</li>
+<li>零外部中间件: 无 Redis / RabbitMQ / Milvus / MinIO</li>
+</div>
+
+<h2>二、项目结构</h2>
+<pre>
+ai-platform/
+├── config.yaml                    # ✅ 主配置（LLM / Agent / 知识库 / Web）
+├── package.json                   # ✅ 依赖 & 启动脚本
+├── tsconfig.json                  # ✅ TypeScript 配置
+├── .gitignore                     # ✅ Git忽略规则
+│
+├── data/                          # 自动创建
+│   ├── app.db                     # SQLite 数据库（sql.js）
+│   ├── kb/                        # 知识库源文件（.txt/.md）
+│   └── files/                     # 其他文件存储
+│
+├── plugins/
+│   └── weather/index.js           # ✅ 天气查询 Skill 示例插件
+│
+└── src/
+    ├── index.ts                   # 入口：initDb → agentManager → tools → skills → channels → web
+    ├── types.ts                   # 全局类型（AgentDef, TraceSpan, UnifiedMessage...）
+    ├── config.ts                  # 加载 config.yaml
+    ├── event-bus.ts               # 事件总线（agents:changed, shutdown 等）
+    ├── channel-manager.ts         # 通道管理器（NapCat 等启停控制）
+    │
+    ├── db/sqlite.ts               # sql.js 封装：queryAll / queryOne / runStmt / saveDb
+    │
+    ├── engine/
+    │   ├── model-factory.ts       # ChatOpenAI 模型工厂（带缓存）
+    │   ├── prompt.ts              # 系统提示词构建（含人设渲染）
+    │   └── agent-manager.ts       # Agent 路由匹配 + LangChain Tool 绑定 + 函数调用
+    │
+    ├── agent-manager/
+    │   ├── store.ts               # Agent CRUD → SQLite agents 表
+    │   ├── validator.ts           # Agent 配置校验
+    │   └── loader.ts              # DB→内存热加载（监听 agents:changed 事件）
+    │
+    ├── knowledge/
+    │   ├── index.ts               # 知识库加载 + 分块 + 向量化 + 余弦召回
+    │   ├── embedder-ollama.ts     # Ollama embedding API（3s 超时）
+    │   └── tools/index.ts         # 内置 MCP 工具：retrieve_knowledge, web_search, etc.
+    │
+    ├── memory/manager.ts          # 会话 & 短期记忆（session 表 + context 数组）
+    ├── tracing/manager.ts         # TraceManager（Span 追踪 → SQLite traces 表）
+    ├── skill/registry.ts          # Skill 插件注册 & 匹配执行
+    ├── mcp/
+    │   ├── registry.ts            # 工具注册表（register / get / callTool）
+    │   └── server.ts              # 外部 MCP Server WebSocket 连接管理
+    │
+    ├── adapters/napcat.ts         # NapCat 通道类（start/stop/applyConfig，不自连）
+    │
+    └── web/
+        ├── app.ts                 # Express API（6 组路由）
+        └── static/index.html      # 管理后台 UI（6 个标签页）
+</pre>
+
+<h2>三、核心数据流</h2>
+<pre>
+QQ 消息 → NapCat WebSocket
+  → agentManager.handleMessage(msg)
+    → traceManager.trace('agent.handleMessage', ...)
+    → getSession(userId).currentAgent       ← 记忆模块
+    → matchAgent(msg)                       ← 路由匹配（command > keyword > catchall）
+    → buildSystemMessages(agent)            ← 含人设渲染
+    → getContextMessages(userId)            ← 短期记忆（最近 20 轮）
+    → createModelForAgent(...)              ← 模型工厂
+    → resolveTools(agent)                   ← MCP 注册表筛选 Agent 可用工具
+    → model.bindTools(tools).invoke()       ← LangChain 函数调用
+    → 自动执行 tool_calls 循环
+    → addMessageToContext(assistant, text)  ← 写入记忆
+    → 回复 → NapCat sendMsg
+</pre>
+
+<h2>四、配置说明 (config.yaml)</h2>
+<table>
+<tr><th>字段</th><th>说明</th><th>默认值</th></tr>
+<tr><td>llm.api_key</td><td>LLM API Key</td><td>sk-your-api-key</td></tr>
+<tr><td>llm.base_url</td><td>API 地址</td><td>https://api.deepseek.com/v1</td></tr>
+<tr><td>llm.model</td><td>默认模型</td><td>deepseek-chat</td></tr>
+<tr><td>agents.*.route.type</td><td>路由类型</td><td>catchall</td></tr>
+<tr><td>knowledge.embed_model</td><td>Ollama 向量模型</td><td>bge-large-zh-v1.5</td></tr>
+<tr><td>web.port</td><td>管理后台端口</td><td>3000</td></tr>
+<tr><td>napcat.ws_url</td><td>NapCat 地址（通道管理里配）</td><td>ws://127.0.0.1:8080</td></tr>
+</table>
+
+<h2>五、启动方式</h2>
+<pre>cd ai-platform
+npm install           # 首次，已安装可跳过
+npm start             # 构建 TS + 启动
+# 或
+npm run dev           # tsx watch 热重载</pre>
+<p>启动后打开 <code>http://localhost:3000</code> 进入管理后台。</p>
+
+<h2>六、管理后台 6 个标签页</h2>
+<table>
+<tr><th>标签</th><th>功能</th></tr>
+<tr><td>🤖 Agent 管理</td><td>增删改查 Agent，启停、编辑系统提示词/路由/模型</td></tr>
+<tr><td>📡 通道管理</td><td>配置 NapCat 地址，连接/断开 QQ 通道</td></tr>
+<tr><td>📚 知识库</td><td>查看文档列表和文本分块，删除分块，重新索引</td></tr>
+<tr><td>🔧 工具管理</td><td>查看已注册 MCP 工具，连接/断开外部 MCP 服务器</td></tr>
+<tr><td>📋 追踪日志</td><td>查看 AI 调用链路 Span（trace_id, 耗时, 状态）</td></tr>
+<tr><td>💬 会话管理</td><td>查看活跃用户会话，切换当前 Agent</td></tr>
+</table>
+
+<h2>七、API 路由一览</h2>
+<div class="block" style="font-size:.76rem">
+<strong>Agent:</strong> GET/POST /api/agents, GET/PUT/DELETE /api/agents/:id, POST /api/agents/:id/toggle<br>
+<strong>Traces:</strong> GET /api/traces, GET /api/traces/:traceId<br>
+<strong>Sessions:</strong> GET /api/sessions, POST /api/sessions/:userId/switch<br>
+<strong>Channels:</strong> GET /api/channels, GET /api/channels/:id, PUT /api/channels/:id/config, POST /api/channels/:id/start|stop<br>
+<strong>Knowledge:</strong> GET /api/knowledge/documents|chunks, GET|DELETE /api/knowledge/chunks/:id, POST /api/knowledge/reindex<br>
+<strong>Tools:</strong> GET /api/tools, POST /api/tools/external/connect|disconnect<br>
+</div>
+
+<h2>八、数据库表 (SQLite)</h2>
+<table>
+<tr><th>表</th><th>用途</th><th>关键字段</th></tr>
+<tr><td>agents</td><td>Agent 定义</td><td>id, model, system_prompt, persona(JSON), route(JSON), tools(JSON)</td></tr>
+<tr><td>sessions</td><td>用户会话</td><td>user_id(PK), current_agent, context(JSON)</td></tr>
+<tr><td>messages</td><td>消息记录</td><td>id, user_id, text, role, platform, timestamp</td></tr>
+<tr><td>traces</td><td>追踪 Span</td><td>id, trace_id, parent_id, name, status, duration, metadata(JSON)</td></tr>
+<tr><td>knowledge_chunks</td><td>知识库分块</td><td>id, file, chunk_index, content, embedding(JSON)</td></tr>
+<tr><td>channels</td><td>通道配置</td><td>id(PK), type, name, enabled, config(JSON), status</td></tr>
+<tr><td>long_term_memories</td><td>长期记忆</td><td>user_id, agent_id, content, type</td></tr>
+</table>
+
+<h2>九、待完成 / 可扩展</h2>
+<div class="block">
+<span class="tag wip">待完成</span> <strong>Agent 执行中的 Skill 集成</strong> — 当前 handleMessage 未调用 skillRegistry.execute()<br>
+<span class="tag wip">待完成</span> <strong>长期记忆压缩</strong> — long_term_memories 表已有但尚无定期总结写入逻辑<br>
+<span class="tag wip">待完成</span> <strong>路由类型 llm_match</strong> — config.yaml 支持但 engine 侧未实现 LLM 判断路由<br>
+<span class="tag wip">待完成</span> <strong>LangGraph 升级</strong> — 当前只用 model.bindTools，可升级为 StateGraph 持久化<br>
+<span class="tag wip">待完成</span> <strong>Auth 认证</strong> — 管理后台无登录，直接暴露<br>
+<span class="tag wip">待完成</span> <strong>文件上传</strong> — data/files/ 目录已创建但 API 和管理界面未实现<br>
+</div>
+
+<h2>十、常见问题</h2>
+<div class="block" style="font-size:.8rem">
+<p><strong>Q: EADDRINUSE 端口被占用？</strong><br>
+A: 程序会自动尝试下一个端口（3000→3001...），或手动 <code>Get-NetTCPConnection -LocalPort 3000 | Stop-Process</code></p>
+
+<p><strong>Q: 知识库向量化失败？</strong><br>
+A: 需要本地运行 Ollama 并加载 bge-large-zh-v1.5 模型，首次 embed 有 3 秒超时。也可留空跳过向量化，走全文搜索回退。</p>
+
+<p><strong>Q: 如何接入真实搜索？</strong><br>
+A: 修改 <code>knowledge/tools/index.ts</code> 中 web_search 工具的 execute 实现，接入 SerpAPI / Bing Search API。</p>
+
+<p><strong>Q: tsx src/index.ts 无输出？</strong><br>
+A: 一些环境下 tsx 有 stdout 缓冲问题，使用 <code>npx tsc && node dist/index.js</code> 替代。</p>
+</div>
+
+<p style="text-align:center;color:#b2bec3;font-size:.72rem;margin-top:32px;border-top:1px solid #eef0f6;padding-top:16px">
+✦ AI Platform · 会话记忆文件 · 后续 AI 可从此文件恢复上下文
+</p>
+
+</body>
+</html>

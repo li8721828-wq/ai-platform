@@ -1,0 +1,63 @@
+napcat:
+  ws_url: ws://127.0.0.1:8080
+  token: ""
+
+llm:
+  provider: deepseek
+  api_key: sk-your-api-key
+  base_url: https://api.deepseek.com/v1
+  model: deepseek-chat
+  temperature: 0.7
+
+agents:
+  default:
+    model: deepseek-chat
+    temperature: 0.7
+    system_prompt: 你是 AI 助手，使用工具回答用户问题
+    tools: [web_search, get_time, calc]
+    route:
+      type: catchall
+
+  assistant:
+    model: deepseek-chat
+    temperature: 0.8
+    system_prompt: 你是用户的私人助手，性格温和有礼
+    persona:
+      name: 小星
+      avatar: "🤖"
+      personality: [温柔, 耐心, 幽默]
+      speaking_style: 口语化，语气亲切
+      background: 由 AI 平台创建的智能助手，热爱学习
+      likes: [读书, 科技]
+      dislikes: [争吵]
+    memory:
+      short_term: 20
+      long_term: summary
+      fact_memory: true
+    greeting: 你好呀！我是小星，有什么可以帮你的吗？✨
+    route:
+      type: catchall
+      priority: 5
+
+  coder:
+    model: claude-sonnet-4
+    temperature: 0.3
+    max_tokens: 8192
+    system_prompt: 你是代码专家，写代码时给出完整可运行的示例
+    tools: [web_search, code_executor]
+    route:
+      type: command
+      commands: [/code, /写代码]
+      priority: 100
+
+knowledge:
+  embed_model: BAAI/bge-large-zh-v1.5
+  chunk_size: 512
+  chunk_overlap: 64
+  top_k: 5
+  min_score: 0.45
+
+web:
+  port: 3000
+
+data_dir: ./data
