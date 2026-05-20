@@ -25,7 +25,7 @@ const banner = `
   ${CYAN}   ╚═══██╗████╔╝██║████╔╝██║██╔══╝${RESET}
   ${CYAN}  ██████╔╝╚██████╔╝╚██████╔╝███████╗${RESET}
   ${CYAN}  ╚═════╝  ╚═════╝  ╚═════╝ ╚══════╝${RESET}
-  ${YELLOW}  :: AI Platform :: v1.1.0${RESET}
+  ${YELLOW}  :: AI Platform :: v1.1.1${RESET}
 `;
 
 async function main() {
