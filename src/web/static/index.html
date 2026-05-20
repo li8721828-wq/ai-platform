@@ -667,6 +667,8 @@ document.querySelectorAll('.nav-item').forEach(item => {
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     item.classList.add('active');
     $(`panel-${item.dataset.tab}`).classList.add('active');
+    // 点击运行日志时滚到最底部（最新日志）
+    if (item.dataset.tab === 'logs') scrollLogToBottom();
   });
 });
 
@@ -1157,6 +1159,104 @@ function setLogLevel(level) {
   logLevel = level;
   document.querySelectorAll('#log-level-filter .btn').forEach(b => b.classList.toggle('active', b.dataset.level === level));
   loadLogs();
+}
+
+function scrollLogToBottom() {
+  var c = $('log-list');
+  if (c) setTimeout(function() { c.scrollTop = c.scrollHeight; }, 60);
+}
+
+async function loadLogs() {
+  const params = new URLSearchParams({ level: logLevel });
+  const q = $('log-search')?.value?.trim();
+  if (q) {
+    if (/^[0-9a-f]{6,20}$/i.test(q)) params.set('traceId', q);
+    else params.set('q', q);
+  }
+  params.set('limit', '500');
+  const r = await api('/logs?' + params.toString());
+  if (!r) return;
+  const container = $('log-list');
+  if (!r.entries?.length) {
+    container.innerHTML = '<div class="terminal-empty">暂无日志</div>';
+    $('log-count').textContent = '共 0 条';
+    return;
+  }
+  container.innerHTML = r.entries.map(e => {
+    const level = e.level || 'info';
+    let component = '';
+    let message = e.msg || '';
+    const m = message.match(/^\[([^\]]+)\]\s*(.*)/);
+    if (m) { component = m[1]; message = m[2]; }
+    const pairs = [];
+    if (e.duration_ms !== undefined) pairs.push(e.duration_ms + 'ms');
+    if (e.userId) pairs.push('User: ' + e.userId.slice(0,8));
+    if (e.agentId) pairs.push('Agent: ' + e.agentId);
+    if (e.meta) {
+      for (const [k, v] of Object.entries(e.meta)) {
+        if (k === 'elapsed') continue;
+        const val = typeof v === 'string' ? v : typeof v === 'number' ? v : JSON.stringify(v).slice(0,40);
+        pairs.push(k + ': ' + val);
+      }
+    }
+    const metaStr = pairs.length ? ' <span class="meta-inline">(' + esc(pairs.join(', ')) + ')</span>' : '';
+    const traceHtml = e.traceId ? ' <span class="trace-tag">' + esc(e.traceId.slice(0,8)) + '</span>' : '';
+    const compHtml = component ? '<span class="comp">' + esc(component) + '</span> ' : '';
+    return '<div class="line line-' + level + '"><span class="ts">' + esc(e.ts) + '</span> <span class="level">' + level.toUpperCase() + '</span> ' + compHtml + '<span class="msg">' + esc(message) + '</span>' + metaStr + traceHtml + '</div>';
+  }).join('');
+  $('log-count').textContent = '共 ' + r.total + ' 条';
+  // 自动刷新时：仅在已在底部时跟随
+  var atBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 60;
+  if (atBottom) container.scrollTop = container.scrollHeight;
+}
+
+async function loadLogs() {
+  const params = new URLSearchParams({ level: logLevel });
+  const q = $('log-search')?.value?.trim();
+  if (q) {
+    if (/^[0-9a-f]{6,20}$/i.test(q)) params.set('traceId', q);
+    else params.set('q', q);
+  }
+  params.set('limit', '500');
+  const r = await api('/logs?' + params.toString());
+  if (!r) return;
+  const container = $('log-list');
+  if (!r.entries?.length) {
+    container.innerHTML = '<div class="terminal-empty">暂无日志</div>';
+    $('log-count').textContent = '共 0 条';
+    return;
+  }
+  container.innerHTML = r.entries.map(e => {
+    const level = e.level || 'info';
+    let component = '';
+    let message = e.msg || '';
+    const m = message.match(/^\[([^\]]+)\]\s*(.*)/);
+    if (m) { component = m[1]; message = m[2]; }
+    const pairs = [];
+    if (e.duration_ms !== undefined) pairs.push(e.duration_ms + 'ms');
+    if (e.userId) pairs.push('User: ' + e.userId.slice(0,8));
+    if (e.agentId) pairs.push('Agent: ' + e.agentId);
+    if (e.meta) {
+      for (const [k, v] of Object.entries(e.meta)) {
+        if (k === 'elapsed') continue;
+        const val = typeof v === 'string' ? v : typeof v === 'number' ? v : JSON.stringify(v).slice(0,40);
+        pairs.push(k + ': ' + val);
+      }
+    }
+    const metaStr = pairs.length ? ' <span class="meta-inline">(' + esc(pairs.join(', ')) + ')</span>' : '';
+    const traceHtml = e.traceId ? ' <span class="trace-tag">' + esc(e.traceId.slice(0,8)) + '</span>' : '';
+    const compHtml = component ? '<span class="comp">' + esc(component) + '</span> ' : '';
+    return '<div class="line line-' + level + '"><span class="ts">' + esc(e.ts) + '</span> <span class="level">' + level.toUpperCase() + '</span> ' + compHtml + '<span class="msg">' + esc(message) + '</span>' + metaStr + traceHtml + '</div>';
+  }).join('');
+  $('log-count').textContent = '共 ' + r.total + ' 条';
+  // 首次打开或刷新自动滚到底部（最新日志）；后续自动刷新时仅当已在底部才滚动
+  if (logFirstLoad) {
+    logFirstLoad = false;
+    setTimeout(function() { container.scrollTop = container.scrollHeight; }, 50);
+  } else {
+    var atBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 60;
+    if (atBottom) container.scrollTop = container.scrollHeight;
+  }
 }
 
 async function loadLogs() {
