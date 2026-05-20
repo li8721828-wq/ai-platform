@@ -87,9 +87,28 @@ select.form-control{appearance:none;background:url("data:image/svg+xml,%3Csvg xm
 .gap-4{gap:4px}
 .truncate{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:768px){.layout{flex-direction:column;padding:16px}.sidebar{width:100%;display:flex;gap:4px;overflow-x:auto;padding-bottom:8px}.sidebar .nav-item{white-space:nowrap;flex-shrink:0;margin-bottom:0}.header{padding:0 16px}}
+/* Login */
+.login-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;z-index:999}
+.login-box{background:#fff;border-radius:16px;padding:40px;width:360px;box-shadow:0 20px 60px rgba(0,0,0,.2);text-align:center}
+.login-box h2{font-size:1.2rem;margin-bottom:4px;color:#2d3436}
+.login-box p{font-size:.78rem;color:#b2bec3;margin-bottom:20px}
+.login-box .form-control{text-align:center;font-size:1rem;padding:12px;margin-bottom:12px}
+.login-box .btn{width:100%;padding:12px;font-size:.9rem;justify-content:center}
+.login-error{color:#e74c3c;font-size:.75rem;margin-top:8px;display:none}
 </style>
 </head>
 <body>
+
+<!-- Login -->
+<div class="login-overlay" id="login-screen">
+  <div class="login-box">
+    <h2>✦ AI Platform</h2>
+    <p>输入管理员密码进入管理后台</p>
+    <input class="form-control" type="password" id="login-pwd" placeholder="密码" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn btn-primary" onclick="doLogin()">进入后台</button>
+    <div class="login-error" id="login-error">密码错误</div>
+  </div>
+</div>
 
 <div class="header">
   <div style="display:flex;align-items:center;gap:12px">
@@ -98,10 +117,11 @@ select.form-control{appearance:none;background:url("data:image/svg+xml,%3Csvg xm
   </div>
   <div style="display:flex;align-items:center;gap:16px;font-size:.8rem;opacity:.8">
     <span id="header-status">● 运行中</span>
+    <a style="color:rgba(255,255,255,.7);cursor:pointer;font-size:.72rem" onclick="doLogout()">退出</a>
   </div>
 </div>
 
-<div class="layout">
+<div class="layout" style="display:none">
   <div class="sidebar" id="sidebar">
     <div class="nav-item active" data-tab="agents"><span class="ico">🤖</span> Agent 管理</div>
     <div class="nav-item" data-tab="channels"><span class="ico">📡</span> 通道管理</div>
@@ -136,7 +156,11 @@ select.form-control{appearance:none;background:url("data:image/svg+xml,%3Csvg xm
         <div><button class="btn btn-outline btn-sm" onclick="reindexKB()">重新索引</button></div>
       </div>
       <div class="card" style="padding:14px 18px">
-        <div style="font-size:.82rem;font-weight:600;margin-bottom:8px">📄 文档列表</div>
+        <div style="font-size:.82rem;font-weight:600;margin-bottom:8px">📄 文档列表 <span style="font-weight:400;font-size:.72rem;color:#b2bec3">— 文件放在 data/kb/ 下，或在线新建</span></div>
+        <div style="display:flex;gap:6px;margin-bottom:10px">
+          <input class="form-control" id="kb-filename" placeholder="文件名（如 guide.txt）" style="width:200px">
+          <button class="btn btn-primary btn-sm" onclick="uploadKBDoc()">新建</button>
+        </div>
         <div id="kb-docs" style="font-size:.78rem;color:#636e72">加载中...</div>
       </div>
       <div class="card" style="padding:14px 18px">
@@ -233,16 +257,64 @@ select.form-control{appearance:none;background:url("data:image/svg+xml,%3Csvg xm
 <script>
 const BASE = '/api';
 let state = { agents: [], channels: [], traces: [], sessions: [], kb: { docs: [], chunks: [] }, tools: [] };
-let polling = false;
+let AUTH_TOKEN = localStorage.getItem('auth_token') || '';
 
 function $(id) { return document.getElementById(id); }
 
 async function api(path, opts) {
-  const res = await fetch(BASE + path, {
-    headers: { 'Content-Type': 'application/json' },
-    ...(opts || {}),
-  });
+  const headers = { 'Content-Type': 'application/json' };
+  if (AUTH_TOKEN) headers['x-auth-token'] = AUTH_TOKEN;
+  const res = await fetch(BASE + path, { headers, ...(opts || {}) });
+  if (res.status === 401 && !path.startsWith('/auth/')) {
+    AUTH_TOKEN = '';
+    localStorage.removeItem('auth_token');
+    showLogin();
+    return null;
+  }
   return res.json();
+}
+
+// === Auth ===
+async function doLogin() {
+  const pwd = $('login-pwd').value;
+  const r = await api('/auth/login', { method: 'POST', body: JSON.stringify({ password: pwd }) });
+  if (r && r.ok) {
+    AUTH_TOKEN = r.token;
+    localStorage.setItem('auth_token', r.token);
+    $('login-screen').style.display = 'none';
+    document.querySelector('.layout').style.display = 'flex';
+    initAll();
+  } else {
+    $('login-error').style.display = 'block';
+  }
+}
+
+function doLogout() {
+  api('/auth/logout', { method: 'POST' });
+  AUTH_TOKEN = '';
+  localStorage.removeItem('auth_token');
+  showLogin();
+}
+
+function showLogin() {
+  $('login-screen').style.display = 'flex';
+  document.querySelector('.layout').style.display = 'none';
+  $('login-pwd').value = '';
+  $('login-error').style.display = 'none';
+}
+
+async function checkAuth() {
+  if (!AUTH_TOKEN) { showLogin(); return false; }
+  const r = await api('/auth/check');
+  if (r && r.ok) {
+    $('login-screen').style.display = 'none';
+    document.querySelector('.layout').style.display = 'flex';
+    return true;
+  }
+  AUTH_TOKEN = '';
+  localStorage.removeItem('auth_token');
+  showLogin();
+  return false;
 }
 
 // === Sidebar ===
@@ -451,12 +523,13 @@ async function switchAgent(userId, agentId) {
 async function loadKB() {
   state.kb.docs = await api('/knowledge/documents');
   const docsHtml = state.kb.docs.length
-    ? state.kb.docs.map(d => `<div style="display:flex;gap:8px;padding:4px 0;border-bottom:1px solid #f0f0f0">
+    ? state.kb.docs.map(d => `<div style="display:flex;gap:8px;padding:4px 0;border-bottom:1px solid #f0f0f0;align-items:center">
         <span style="flex:1">${esc(d.name)}</span>
         <span style="color:#b2bec3;font-size:.72rem">${(d.size / 1024).toFixed(1)} KB</span>
         <span style="color:#b2bec3;font-size:.72rem">${new Date(d.mtime).toLocaleDateString()}</span>
+        <button class="btn btn-danger btn-sm" onclick="deleteKBDoc('${esc(d.name)}')">删除</button>
       </div>`).join('')
-    : '<div style="color:#b2bec3;padding:8px 0">暂无文档，将文件放入 data/kb/ 目录</div>';
+    : '<div style="color:#b2bec3;padding:8px 0">暂无文档，将文件放入 data/kb/ 目录，或在线新建</div>';
   $('kb-docs').innerHTML = docsHtml;
 
   state.kb.chunks = await api('/knowledge/chunks');
@@ -480,6 +553,24 @@ async function deleteChunk(id) {
 
 async function reindexKB() {
   await api('/knowledge/reindex', { method: 'POST' });
+  loadKB();
+}
+
+async function uploadKBDoc() {
+  const name = $('kb-filename').value.trim();
+  if (!name) return alert('请输入文件名');
+  const content = prompt(`请输入 ${name} 的内容:`);
+  if (content === null) return;
+  await api('/knowledge/upload', {
+    method: 'POST',
+    body: JSON.stringify({ name, content }),
+  });
+  $('kb-filename').value = '';
+  loadKB();
+}
+
+async function deleteKBDoc(name) {
+  await api('/knowledge/documents/' + encodeURIComponent(name), { method: 'DELETE' });
   loadKB();
 }
 
@@ -516,8 +607,11 @@ function esc(s) {
 }
 
 // === Init ===
-loadAgents(); loadChannels(); loadKB(); loadTools(); loadTraces(); loadSessions();
-setInterval(() => { loadTraces(); loadSessions(); loadChannels(); loadKB(); }, 5000);
+function initAll() {
+  loadAgents(); loadChannels(); loadKB(); loadTools(); loadTraces(); loadSessions();
+  setInterval(() => { loadTraces(); loadSessions(); loadChannels(); loadKB(); }, 5000);
+}
+checkAuth();
 </script>
 </body>
 </html>

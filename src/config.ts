@@ -21,6 +21,7 @@ export interface Config {
     min_score: number;
   };
   web: { port: number };
+  admin?: { password?: string };
   data_dir: string;
 }
 

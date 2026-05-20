@@ -6,6 +6,7 @@ import './agent-manager/loader.js';
 import { channelManager } from './channel-manager.js';
 import { initKnowledgeTools } from './knowledge/tools/index.js';
 import { skillRegistry } from './skill/registry.js';
+import { memoryCompressor } from './memory/compressor.js';
 import { createApp } from './web/app.js';
 
 async function main() {
@@ -34,6 +35,9 @@ async function main() {
   // 通道管理器（不主动连接 NapCat）
   channelManager.init();
   console.log('  ✓ 通道管理器就绪');
+
+  memoryCompressor.start(config);
+  console.log('  ✓ 长期记忆压缩已启动');
 
   // Web 管理后台
   const app = createApp(config);

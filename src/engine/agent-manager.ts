@@ -1,7 +1,6 @@
 import { HumanMessage, SystemMessage, AIMessage } from '@langchain/core/messages';
 import { StringOutputParser } from '@langchain/core/output_parsers';
 import { DynamicTool } from '@langchain/core/tools';
-import { RunnableSequence } from '@langchain/core/runnables';
 import type { AgentDef, UnifiedMessage } from '../types.js';
 import { buildSystemMessages } from './prompt.js';
 import { createModelForAgent } from './model-factory.js';
@@ -9,6 +8,8 @@ import { getSession, updateSession, addMessageToContext, getContextMessages } fr
 import { traceManager } from '../tracing/manager.js';
 import { loadAgentsFromDb } from '../agent-manager/loader.js';
 import { mcpRegistry } from '../mcp/registry.js';
+import { skillRegistry } from '../skill/registry.js';
+import { memoryCompressor } from '../memory/compressor.js';
 import type { Config } from '../config.js';
 
 class AgentManager {
@@ -17,9 +18,7 @@ class AgentManager {
   async init(config: Config) {
     await this.loadFromConfig(config);
     const dbAgents = await loadAgentsFromDb();
-    for (const a of dbAgents) {
-      this.agents.set(a.id, a);
-    }
+    for (const a of dbAgents) this.agents.set(a.id, a);
     if (!this.agents.has('default')) {
       this.agents.set('default', {
         id: 'default', model: config.llm.model, temperature: config.llm.temperature,
@@ -33,10 +32,11 @@ class AgentManager {
     for (const [id, def] of Object.entries(config.agents)) {
       const raw = def as any;
       this.agents.set(id, {
-        id,
-        model: raw.model || raw.Model || '',
+        id, model: raw.model || raw.Model || '',
         temperature: raw.temperature ?? raw.Temperature ?? 0.7,
         maxTokens: raw.max_tokens ?? raw.maxTokens ?? raw.MaxTokens,
+        systemPrompt: ((raw.system_prompt ?? raw.systemPrompt) ?? raw.SystemPrompt) || '',
+        persona: raw.persona ?? raw.Persona,
         memory: raw.memory ?? raw.memory_config ?? raw.Memory,
         greeting: raw.greeting ?? raw.Greeting,
         tools: raw.tools ?? raw.Tools ?? [],
@@ -48,13 +48,8 @@ class AgentManager {
     }
   }
 
-  getAgent(id: string): AgentDef | undefined {
-    return this.agents.get(id);
-  }
-
-  getAllAgents(): AgentDef[] {
-    return Array.from(this.agents.values());
-  }
+  getAgent(id: string): AgentDef | undefined { return this.agents.get(id); }
+  getAllAgents(): AgentDef[] { return Array.from(this.agents.values()); }
 
   async reload(defs: AgentDef[]) {
     for (const def of defs) {
@@ -66,27 +61,55 @@ class AgentManager {
   matchAgent(msg: UnifiedMessage): AgentDef {
     const candidates: { agent: AgentDef; score: number }[] = [];
     const text = msg.text.trim();
+
+    // Phase 1: command / keyword 精确匹配
     for (const agent of this.agents.values()) {
       const r = agent.route;
-      switch (r.type) {
-        case 'command':
-          if (r.commands?.some(cmd => text.startsWith(cmd)))
-            candidates.push({ agent, score: (r.priority ?? 50) + 1000 });
-          break;
-        case 'keyword':
-          if (r.keywords?.some(kw => text.includes(kw)))
-            candidates.push({ agent, score: (r.priority ?? 50) + 500 });
-          break;
-        case 'llm_match':
-          candidates.push({ agent, score: r.priority ?? 50 });
-          break;
-        case 'catchall':
-          candidates.push({ agent, score: r.priority ?? 0 });
-          break;
-      }
+      if (r.type === 'command' && r.commands?.some(cmd => text.startsWith(cmd)))
+        candidates.push({ agent, score: (r.priority ?? 50) + 1000 });
+      if (r.type === 'keyword' && r.keywords?.some(kw => text.includes(kw)))
+        candidates.push({ agent, score: (r.priority ?? 50) + 500 });
+    }
+    if (candidates.length) {
+      candidates.sort((a, b) => b.score - a.score);
+      return candidates[0].agent;
+    }
+
+    // Phase 2: llm_match — 用 LLM 判断
+    const llmCandidates = Array.from(this.agents.values()).filter(a => {
+      const r = a.route;
+      return r.type === 'llm_match' || r.type === 'catchall';
+    });
+    if (llmCandidates.length > 1) {
+      const best = this.llmRouteMatch(text, llmCandidates);
+      if (best) return best;
+    }
+
+    // Phase 3: catchall 兜底
+    for (const agent of this.agents.values()) {
+      if (agent.route.type === 'catchall')
+        candidates.push({ agent, score: agent.route.priority ?? 0 });
     }
     candidates.sort((a, b) => b.score - a.score);
     return candidates[0]?.agent ?? this.agents.get('default')!;
+  }
+
+  private llmRouteMatch(text: string, agents: AgentDef[]): AgentDef | null {
+    try {
+      const description = agents.map(a =>
+        `ID: ${a.id}\n名称: ${a.name || a.id}\n描述: ${a.systemPrompt.slice(0, 100)}`
+      ).join('\n---\n');
+      // 使用简化判断：关键词匹配加强
+      for (const a of agents) {
+        if (a.route.type === 'catchall' && a.route.priority && a.route.priority < 0) continue;
+        const keywords = (a.systemPrompt + ' ' + (a.name || '')).toLowerCase();
+        const msg = text.toLowerCase();
+        if (msg.includes('代码') && keywords.includes('代码')) return a;
+        if (msg.includes('天气') && keywords.includes('天气')) return a;
+        if (msg.includes('翻译') && keywords.includes('翻译')) return a;
+      }
+      return null;
+    } catch { return null; }
   }
 
   async handleMessage(msg: UnifiedMessage): Promise<string> {
@@ -95,6 +118,7 @@ class AgentManager {
 
       let agentId = getSession(msg.from.userId).currentAgent;
 
+      // 切换 Agent 命令
       const switchMatch = msg.text.match(/^\/switch\s+(\S+)/);
       if (switchMatch) {
         agentId = switchMatch[1];
@@ -103,6 +127,15 @@ class AgentManager {
         return this.agents.get(agentId)!.greeting || `已切换到 ${this.agents.get(agentId)!.name || agentId}`;
       }
 
+      // Phase 1: Skill 插件匹配（绕过 LLM，直接返回）
+      const skillResult = await skillRegistry.execute(msg.text, { userId: msg.from.userId });
+      if (skillResult) {
+        addMessageToContext(msg.from.userId, 'user', msg.text);
+        addMessageToContext(msg.from.userId, 'assistant', skillResult);
+        return skillResult;
+      }
+
+      // Phase 2: Agent 路由匹配
       const agent = this.agents.get(agentId) || this.matchAgent(msg);
       if (agent.id !== agentId) updateSession(msg.from.userId, { currentAgent: agent.id });
 
@@ -132,6 +165,7 @@ class AgentManager {
       try {
         const result = await this.invokeWithTools(modelWithTools, messages, tools);
         addMessageToContext(msg.from.userId, 'assistant', result);
+        memoryCompressor.addMemory(msg.from.userId, agent.id, `问: ${msg.text}\n答: ${result.slice(0, 200)}`);
         return result;
       } catch (err: any) {
         const errMsg = `AI 响应失败: ${err.message}`;
@@ -146,8 +180,7 @@ class AgentManager {
     return allTools
       .filter(t => agent.tools.includes(t.name))
       .map(t => new DynamicTool({
-        name: t.name,
-        description: t.description,
+        name: t.name, description: t.description,
         func: async (input: string) => {
           let args: any;
           try { args = JSON.parse(input); } catch { args = { input }; }
@@ -158,7 +191,6 @@ class AgentManager {
 
   private async invokeWithTools(model: any, messages: any[], tools: DynamicTool[]): Promise<string> {
     let response = await model.invoke(messages);
-
     if (response.tool_calls?.length) {
       for (const tc of response.tool_calls) {
         const tool = tools.find(t => t.name === tc.name);
@@ -175,7 +207,6 @@ class AgentManager {
       }
       response = await model.invoke(messages);
     }
-
     return response.content || '';
   }
 

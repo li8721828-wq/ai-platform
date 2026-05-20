@@ -60,4 +60,7 @@ knowledge:
 web:
   port: 3000
 
+admin:
+  password: admin123
+
 data_dir: ./data

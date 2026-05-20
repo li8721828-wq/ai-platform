@@ -1,6 +1,7 @@
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
+import crypto from 'crypto';
 import type { Config } from '../config.js';
 import { agentStore } from '../agent-manager/store.js';
 import { validateAgent } from '../agent-manager/validator.js';
@@ -15,6 +16,44 @@ export function createApp(cfg: Config) {
   const app = express();
   app.use(express.json());
   app.use(express.static(path.resolve('src/web/static')));
+
+  // ===== Auth =====
+  const adminPassword = cfg.admin?.password || 'admin';
+  let authToken: string | null = null;
+  const TOKEN_HEADER = 'x-auth-token';
+
+  function generateToken(): string {
+    return crypto.randomBytes(32).toString('hex');
+  }
+
+  function authMiddleware(req: any, res: any, next: any) {
+    if (req.path === '/api/auth/login') return next();
+    if (req.path.startsWith('/api/')) {
+      const token = req.headers[TOKEN_HEADER] || req.query.token;
+      if (token === authToken) return next();
+      return res.status(401).json({ error: '未登录，请先登录' });
+    }
+    next();
+  }
+  app.use(authMiddleware);
+
+  app.post('/api/auth/login', (req, res) => {
+    const { password } = req.body;
+    if (password === adminPassword) {
+      authToken = generateToken();
+      return res.json({ ok: true, token: authToken });
+    }
+    res.status(403).json({ error: '密码错误' });
+  });
+
+  app.post('/api/auth/logout', (_req, res) => {
+    authToken = null;
+    res.json({ ok: true });
+  });
+
+  app.get('/api/auth/check', (_req, res) => {
+    res.json({ ok: !!authToken });
+  });
 
   // ===== Agents =====
   app.get('/api/agents', (_req, res) => res.json(agentStore.listAll()));
@@ -118,6 +157,23 @@ export function createApp(cfg: Config) {
 
   app.delete('/api/knowledge/chunks/:id', (req, res) => {
     runStmt('DELETE FROM knowledge_chunks WHERE id = ?', [parseInt(req.params.id)]);
+    res.json({ ok: true });
+  });
+
+  app.post('/api/knowledge/upload', (req, res) => {
+    const { name, content } = req.body;
+    if (!name || !content) return res.status(400).json({ error: 'name 和 content 必填' });
+    const kbDir = path.join(cfg.data_dir, 'kb');
+    if (!fs.existsSync(kbDir)) fs.mkdirSync(kbDir, { recursive: true });
+    const filePath = path.join(kbDir, name.endsWith('.txt') ? name : name + '.txt');
+    fs.writeFileSync(filePath, content, 'utf-8');
+    res.json({ ok: true, file: path.basename(filePath) });
+  });
+
+  app.delete('/api/knowledge/documents/:name', (req, res) => {
+    const kbDir = path.join(cfg.data_dir, 'kb');
+    const filePath = path.join(kbDir, req.params.name);
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
     res.json({ ok: true });
   });
 
