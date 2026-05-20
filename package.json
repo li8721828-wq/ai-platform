@@ -1,28 +1,37 @@
 {
   "name": "ai-platform",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "scripts": {
+    "kill": "node scripts/kill-port.mjs",
     "start": "npm run build && node dist/index.js",
+    "restart": "npm run kill && npm run start",
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@langchain/core": "^0.3.0",
     "@langchain/openai": "^0.4.0",
+    "boxen": "^8.0.1",
+    "chalk": "^5.6.2",
     "express": "^4.19.0",
     "langchain": "^0.3.0",
+    "ora": "^9.4.0",
     "sql.js": "^1.10.0",
     "ws": "^8.16.0",
     "yaml": "^2.4.0"
   },
   "devDependencies": {
     "@types/express": "^4.17.0",
+    "@types/ora": "^3.1.0",
     "@types/sql.js": "^1.4.11",
     "@types/ws": "^8.5.0",
     "tsx": "^4.16.0",
-    "typescript": "^5.5.0"
+    "typescript": "^5.5.0",
+    "vitest": "^4.1.6"
   }
 }

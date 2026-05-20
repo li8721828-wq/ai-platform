@@ -4,3 +4,4 @@ data/
 *.log
 *.err
 .DS_Store
+.env

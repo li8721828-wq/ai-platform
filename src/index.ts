@@ -1,64 +1,94 @@
 import { loadConfig } from './config.js';
-import { initDb } from './db/sqlite.js';
+import { initDb, getDb } from './db/sqlite.js';
 import { agentManager } from './engine/agent-manager.js';
 import { agentStore } from './agent-manager/store.js';
+import { providerManager } from './provider-manager.js';
 import './agent-manager/loader.js';
 import { channelManager } from './channel-manager.js';
 import { initKnowledgeTools } from './knowledge/tools/index.js';
 import { skillRegistry } from './skill/registry.js';
 import { memoryCompressor } from './memory/compressor.js';
 import { createApp } from './web/app.js';
+import { wsBus } from './ws-bus.js';
+import { eventBus } from './event-bus.js';
+import { logger } from './logger.js';
+
+const CYAN = '\x1b[36m';
+const GREEN = '\x1b[32m';
+const YELLOW = '\x1b[33m';
+const RESET = '\x1b[0m';
+
+const banner = `
+  ${CYAN}  ██████╗  ██████╗  ██████╗ ███████╗${RESET}
+  ${CYAN}  ╚════██╗██╔═████╗██╔═████╗██╔════╝${RESET}
+  ${CYAN}   █████╔╝██║██╔██║██║██╔██║█████╗${RESET}
+  ${CYAN}   ╚═══██╗████╔╝██║████╔╝██║██╔══╝${RESET}
+  ${CYAN}  ██████╔╝╚██████╔╝╚██████╔╝███████╗${RESET}
+  ${CYAN}  ╚═════╝  ╚═════╝  ╚═════╝ ╚══════╝${RESET}
+  ${YELLOW}  :: AI Platform :: v1.1.0${RESET}
+`;
 
 async function main() {
-  console.log('✦ AI Platform 启动中...');
+  console.log(banner);
+  const t0 = Date.now();
 
+  logger.info('[ConfigLoader] Config loaded');
   const config = loadConfig();
-  console.log(`  数据目录: ${config.data_dir}`);
 
+  logger.info('[Database] SQLite database initialized');
   await initDb(config);
-  console.log('  ✓ 数据库初始化完成');
+  seedProviders(config);
 
-  // 加载 Agent：config.yaml → 内存 → 同步到 SQLite
+  const agents = agentManager.getAllAgents();
+  logger.info('[Database] Providers seeded');
+  logger.info('[AgentManager] Agent manager initialized', { count: agents.length });
+
   await agentManager.init(config);
   await syncConfigAgentsToDb(config);
-  console.log(`  ✓ Agent 管理器就绪 (${agentManager.getAllAgents().length} 个)`);
 
-  // 工具和知识库
   const km = initKnowledgeTools(config);
   await km.loadFiles();
-  console.log('  ✓ 知识库 + 工具注册完成');
+  logger.info('[KnowledgeBase] Knowledge base + tools ready');
 
-  // Skill 插件
   await skillRegistry.loadFromDir('plugins');
-  console.log('  ✓ Skill 加载完成');
+  logger.info('[SkillRegistry] Skill plugins loaded');
 
-  // 通道管理器（不主动连接 NapCat）
   channelManager.init();
-  console.log('  ✓ 通道管理器就绪');
+  logger.info('[ChannelManager] Channel manager ready');
 
   memoryCompressor.start(config);
-  console.log('  ✓ 长期记忆压缩已启动');
+  logger.info('[MemoryCompressor] Long-term memory compressor started');
 
-  // Web 管理后台
   const app = createApp(config);
+  logger.info('[WebServer] Express app created');
+
   function startServer(port: number) {
     const server = app.listen(port);
     server.on('listening', () => {
-      console.log(`  ✓ 管理后台: http://localhost:${port}`);
+      wsBus.attach(server);
+      wsBus.setAuthToken(null);
+      eventBus.setWsBroadcast((event, data) => wsBus.broadcast(event, data));
+      const url = `http://localhost:${port}`;
+      const elapsed = Date.now() - t0;
+      logger.info('[TomcatWebServer] Server started', { port, url, elapsed });
+      const ms = `${GREEN}${elapsed}ms${RESET}`;
+      console.log(`\n  ${GREEN}Started AI Platform in ${ms}${RESET}`);
+      console.log(`  ${CYAN}🌐 管理后台: ${url}${RESET}`);
+      if (config.admin?.password) {
+        console.log(`  ${YELLOW}Login with the password from config.yaml${RESET}`);
+      }
     });
     server.on('error', (err: any) => {
       if (err.code === 'EADDRINUSE') {
-        console.warn(`  ! 端口 ${port} 被占用，尝试端口 ${port + 1}...`);
+        logger.warn('[TomcatWebServer] Port in use, trying next', { port });
         startServer(port + 1);
       } else {
-        console.error(`  ✗ 启动失败: ${err.message}`);
+        logger.error('[TomcatWebServer] Failed to start', { error: err.message });
         process.exit(1);
       }
     });
   }
   startServer(config.web.port);
-
-  console.log('✦ 启动完成，等待消息...');
 }
 
 async function syncConfigAgentsToDb(config: any) {
@@ -68,9 +98,26 @@ async function syncConfigAgentsToDb(config: any) {
       try {
         agentStore.create(a);
       } catch (err: any) {
-        console.warn(`  ! 同步 Agent "${a.id}" 到数据库失败:`, err);
+        logger.warn('[AgentStore] Sync agent failed', { id: a.id, error: err.message });
       }
     }
+  }
+}
+
+function seedProviders(config: any) {
+  if (!config.providers?.length) return;
+  const existing = providerManager.getAll();
+  if (existing.length > 0) return;
+  for (const p of config.providers) {
+    providerManager.create({
+      id: p.id,
+      name: p.name,
+      provider: p.provider,
+      apiKey: p.api_key,
+      baseUrl: p.base_url,
+      models: p.models,
+      isDefault: p.is_default ? 1 : 0,
+    });
   }
 }
 
@@ -78,3 +125,17 @@ main().catch(err => {
   console.error('启动失败:', err);
   process.exit(1);
 });
+
+process.on('SIGTERM', () => { logger.info('收到 SIGTERM，优雅关闭...'); shutdown(); });
+process.on('SIGINT', () => { logger.info('收到 SIGINT，优雅关闭...'); shutdown(); });
+
+let shuttingDown = false;
+function shutdown() {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  channelManager.stopAll();
+  memoryCompressor.stop();
+  getDb().close();
+  logger.info('[Shutdown] Server shut down');
+  process.exit(0);
+}

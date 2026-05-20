@@ -1,5 +1,6 @@
 import { WebSocket } from 'ws';
 import { mcpRegistry } from './registry.js';
+import { logger } from '../logger.js';
 
 interface MCPClient {
   name: string;
@@ -17,7 +18,7 @@ class MCPServerManager {
         ws.on('open', () => {
           const client: MCPClient = { name: name || url, ws, tools: [] };
           this.clients.push(client);
-          console.log(`[MCP] 已连接外部服务器: ${client.name}`);
+          logger.info('[MCP] Connected', { name: client.name });
           resolve();
         });
         ws.on('message', (data: Buffer) => {
@@ -27,11 +28,11 @@ class MCPServerManager {
           } catch { /* ignore malformed messages */ }
         });
         ws.on('close', () => {
-          console.log(`[MCP] 断开: ${name || url}`);
+          logger.info('[MCP] Disconnected', { name: name || url });
           this.clients = this.clients.filter(c => c.ws !== ws);
         });
         ws.on('error', (err: Error) => {
-          console.error(`[MCP] 连接失败: ${name || url} - ${err.message}`);
+          logger.error('[MCP] Connection failed', { name: name || url, error: err.message });
           reject(err);
         });
       } catch (err) {

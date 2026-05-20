@@ -1,6 +1,8 @@
 import type { AgentDef } from '../types.js';
 import { queryAll, queryOne, runStmt } from '../db/sqlite.js';
 import { eventBus } from '../event-bus.js';
+import { safeJsonParse } from '../utils.js';
+import { logger } from '../logger.js';
 
 export class AgentStore {
   list(): AgentDef[] {
@@ -22,6 +24,7 @@ export class AgentStore {
       def.id ?? '',
       def.name || def.id || '',
       def.enabled !== false ? 1 : 0,
+      def.provider ?? null,
       def.model || '',
       def.temperature ?? null,
       def.maxTokens ?? null,
@@ -36,14 +39,15 @@ export class AgentStore {
     ];
     const undefinedIdx = params.findIndex(p => p === undefined);
     if (undefinedIdx !== -1) {
-      throw new Error(`参数[${undefinedIdx}] 值为 undefined: key=${['id','name','enabled','model','temperature','max_tokens','system_prompt','persona','memory_config','greeting','tools','mcp_servers','route','created_at','updated_at'][undefinedIdx]}`);
+      throw new Error(`参数[${undefinedIdx}] 值为 undefined: key=${['id','name','enabled','provider','model','temperature','max_tokens','system_prompt','persona','memory_config','greeting','tools','mcp_servers','route','created_at','updated_at'][undefinedIdx]}`);
     }
     runStmt(`
-      INSERT INTO agents (id, name, enabled, model, temperature, max_tokens, system_prompt,
+      INSERT OR REPLACE INTO agents (id, name, enabled, provider, model, temperature, max_tokens, system_prompt,
         persona, memory_config, greeting, tools, mcp_servers, route, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, params);
     eventBus.emit('agents:changed');
+    logger.info(`[AgentStore] Agent created`, { id: def.id, name: def.name });
   }
 
   update(id: string, def: Partial<AgentDef>): void {
@@ -52,24 +56,26 @@ export class AgentStore {
     const merged = { ...existing, ...def };
     const now = Date.now();
     runStmt(`
-      UPDATE agents SET name=?, enabled=?, model=?, temperature=?, max_tokens=?,
+      UPDATE agents SET name=?, enabled=?, provider=?, model=?, temperature=?, max_tokens=?,
         system_prompt=?, persona=?, memory_config=?, greeting=?,
         tools=?, mcp_servers=?, route=?, updated_at=?
       WHERE id=?
     `, [
       merged.name, merged.enabled !== false ? 1 : 0,
-      merged.model, merged.temperature ?? null, merged.maxTokens ?? null,
+      merged.provider ?? null, merged.model, merged.temperature ?? null, merged.maxTokens ?? null,
       merged.systemPrompt, JSON.stringify(merged.persona ?? null),
       JSON.stringify(merged.memory ?? null), merged.greeting ?? null,
       JSON.stringify(merged.tools ?? []), JSON.stringify(merged.mcpServers ?? []),
       JSON.stringify(merged.route), now, id,
     ]);
     eventBus.emit('agents:changed');
+    logger.info(`[AgentStore] Agent updated`, { id, name: merged.name });
   }
 
   remove(id: string): void {
     runStmt('DELETE FROM agents WHERE id = ?', [id]);
     eventBus.emit('agents:changed');
+    logger.info(`[AgentStore] Agent removed`, { id });
   }
 
   toggle(id: string): void {
@@ -83,6 +89,7 @@ function mapRow(row: any): AgentDef {
     id: row.id,
     name: row.name,
     enabled: row.enabled === 1,
+    provider: row.provider || undefined,
     model: row.model,
     temperature: row.temperature ?? undefined,
     maxTokens: row.max_tokens ?? undefined,
@@ -95,10 +102,4 @@ function mapRow(row: any): AgentDef {
     route: safeJsonParse(row.route, { type: 'catchall' }),
   };
 }
-
-function safeJsonParse(val: any, fallback: any = null) {
-  if (!val) return fallback;
-  try { return JSON.parse(val); } catch { return fallback; }
-}
-
 export const agentStore = new AgentStore();

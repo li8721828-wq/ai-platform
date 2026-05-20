@@ -25,12 +25,12 @@ export function initKnowledgeTools(cfg: Config) {
 
   mcpRegistry.register({
     name: 'web_search',
-    description: '搜索互联网信息，返回与查询相关的网页摘要（注意：此为模拟搜索，实际需接入搜索 API）',
+    description: '搜索互联网信息，返回与查询相关的网页摘要',
     parameters: {
       query: { type: 'string', description: '搜索关键词' },
     },
     async execute(args: any) {
-      return `[模拟搜索] 关于"${args.query}"的搜索结果：\n这是一条模拟的搜索结果。要获得真实的搜索能力，请接入搜索 API。`;
+      throw new Error('web_search 工具尚未接入真实搜索 API，请在 .env 中配置 SEARCH_API_KEY 并重启服务');
     },
   });
 

@@ -1,19 +1,17 @@
 import { runStmt, queryAll } from '../db/sqlite.js';
 import type { Config } from '../config.js';
+import { logger } from '../logger.js';
 
 interface LongTermMemory {
-  id: number;
-  userId: string;
-  agentId: string;
-  content: string;
-  summary: string | null;
-  type: string;
-  createdAt: number;
+  id: number; userId: string; agentId: string; content: string; summary: string | null; type: string; createdAt: number;
 }
 
 class MemoryCompressor {
   private timer: any = null;
   private cfg!: Config;
+  private compressing = false;
+  private readonly MAX_MEMORIES_PER_USER = 100;
+  private readonly RETENTION_DAYS = 30;
 
   start(cfg: Config) {
     this.cfg = cfg;
@@ -26,51 +24,62 @@ class MemoryCompressor {
   }
 
   async addMemory(userId: string, agentId: string, content: string) {
-    const now = Date.now();
-    runStmt(`
-      INSERT OR IGNORE INTO long_term_memories (user_id, agent_id, content, summary, type, created_at)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `, [userId, agentId, content, null, 'interaction', now]);
+    runStmt(
+      'INSERT OR IGNORE INTO long_term_memories (user_id, agent_id, content, summary, type, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+      [userId, agentId, content, null, 'interaction', Date.now()],
+    );
   }
 
   getMemories(userId: string, agentId: string, limit = 5): LongTermMemory[] {
-    const rows = queryAll(`
-      SELECT * FROM long_term_memories
-      WHERE user_id = ? AND agent_id = ?
-      ORDER BY created_at DESC LIMIT ?
-    `, [userId, agentId, limit]);
-    return rows.map(mapMemory);
+    return queryAll(
+      'SELECT * FROM long_term_memories WHERE user_id = ? AND agent_id = ? ORDER BY created_at DESC LIMIT ?',
+      [userId, agentId, limit],
+    ).map(mapMemory);
   }
 
   private async compress() {
+    if (this.compressing) return;
+    this.compressing = true;
     try {
+      // 清理过期记忆
+      const cutoff = Date.now() - this.RETENTION_DAYS * 24 * 60 * 60 * 1000;
+      runStmt('DELETE FROM long_term_memories WHERE created_at < ?', [cutoff]);
+
       const users = queryAll(`
-        SELECT DISTINCT l.user_id, l.agent_id
+        SELECT l.user_id, l.agent_id
         FROM long_term_memories l
-        LEFT JOIN sessions s ON l.user_id = s.user_id
         WHERE l.summary IS NULL
         GROUP BY l.user_id, l.agent_id
         HAVING COUNT(*) >= 3
-      `);
+      `) as any[];
 
-      for (const row of users as any[]) {
-        const memories = queryAll(`
-          SELECT * FROM long_term_memories
-          WHERE user_id = ? AND agent_id = ? AND summary IS NULL
-          ORDER BY created_at ASC LIMIT 10
-        `, [row.user_id, row.agent_id]) as any[];
+      for (const row of users) {
+        // 超量清理
+        const total = (queryAll('SELECT COUNT(*) as cnt FROM long_term_memories WHERE user_id = ? AND agent_id = ?', [row.user_id, row.agent_id]) as any[])[0]?.cnt || 0;
+        if (total > this.MAX_MEMORIES_PER_USER) {
+          const toDelete = total - this.MAX_MEMORIES_PER_USER;
+          runStmt('DELETE FROM long_term_memories WHERE id IN (SELECT id FROM long_term_memories WHERE user_id = ? AND agent_id = ? ORDER BY created_at ASC LIMIT ?)', [row.user_id, row.agent_id, toDelete]);
+        }
+
+        const memories = queryAll(
+          'SELECT * FROM long_term_memories WHERE user_id = ? AND agent_id = ? AND summary IS NULL ORDER BY created_at ASC LIMIT 10',
+          [row.user_id, row.agent_id],
+        ) as any[];
 
         if (memories.length < 2) continue;
 
         const combined = memories.map((m: any) => m.content).join('\n');
-        const summary = `📝 用户${row.user_id} 与 ${row.agent_id} 的对话摘要：\n${combined.slice(0, 500)}`;
+        const summary = `📝 ${row.user_id} 与 ${row.agent_id} 的对话摘要：\n${combined.slice(0, 500)}`;
 
         for (const m of memories) {
           runStmt('UPDATE long_term_memories SET summary = ? WHERE id = ?', [summary.slice(0, 200), m.id]);
         }
+        logger.info('长期记忆已压缩', { userId: row.user_id, agentId: row.agent_id, count: memories.length });
       }
     } catch (err) {
-      console.error('[MemoryCompressor] 压缩失败:', err);
+      logger.error('长期记忆压缩失败', { error: (err as any).message });
+    } finally {
+      this.compressing = false;
     }
   }
 }

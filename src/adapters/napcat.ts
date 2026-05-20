@@ -1,18 +1,21 @@
 import { WebSocket } from 'ws';
 import { agentManager } from '../engine/agent-manager.js';
+import { channelManager } from '../channel-manager.js';
+import { logger } from '../logger.js';
+import type { ChannelConfig, IChannelAdapter } from '../channel-manager.js';
 
-export interface ChannelConfig {
-  ws_url: string;
-  token: string;
-}
-
-export class NapCatChannel {
+export class NapCatChannel implements IChannelAdapter {
+  readonly id: string;
   private ws: WebSocket | null = null;
   private reconnectTimer: any = null;
   private url = 'ws://127.0.0.1:8080';
   private token = '';
   status: 'disconnected' | 'connecting' | 'connected' | 'error' = 'disconnected';
   onStatusChange?: (status: string) => void;
+
+  constructor(id: string) {
+    this.id = id;
+  }
 
   applyConfig(config: ChannelConfig) {
     this.url = config.ws_url;
@@ -30,24 +33,28 @@ export class NapCatChannel {
         this.ws.on('open', () => {
           this.status = 'connected';
           this.emitStatus();
+          logger.info('NapCat 已连接', { id: this.id });
           resolve();
         });
         this.ws.on('message', (data: Buffer) => this.onMessage(data));
         this.ws.on('close', () => {
           this.status = 'disconnected';
           this.emitStatus();
+          logger.warn('NapCat 连接断开', { id: this.id });
           this.ws = null;
           this.scheduleReconnect();
         });
         this.ws.on('error', (err: Error) => {
           this.status = 'error';
           this.emitStatus();
+          logger.error('NapCat 连接错误', { id: this.id, error: err.message });
           this.ws = null;
           resolve();
         });
       } catch (err: any) {
         this.status = 'error';
         this.emitStatus();
+        logger.error('NapCat 创建连接失败', { id: this.id, error: err.message });
         resolve();
       }
     });
@@ -68,7 +75,7 @@ export class NapCatChannel {
     if (this.reconnectTimer) return;
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = null;
-      this.start();
+      this.start().catch(err => logger.error('NapCat 重连失败', { error: (err as Error).message }));
     }, 10000);
   }
 
@@ -84,11 +91,11 @@ export class NapCatChannel {
         if (msg) {
           agentManager.handleMessage(msg).then(reply => {
             if (reply) this.sendReply(payload, reply);
-          });
+          }).catch(err => logger.error('NapCat handleMessage 失败', { error: (err as Error).message }));
         }
       }
     } catch (err) {
-      console.error('[NapCat] 消息解析失败:', err);
+      logger.error('NapCat 消息解析失败', { error: (err as Error).message });
     }
   }
 
@@ -129,3 +136,6 @@ export class NapCatChannel {
     }
   }
 }
+
+// Auto-register adapter
+channelManager.registerAdapter('qq', (id) => new NapCatChannel(id));

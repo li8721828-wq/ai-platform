@@ -88,6 +88,7 @@ function applySchema() {
       id TEXT PRIMARY KEY,
       name TEXT,
       enabled INTEGER NOT NULL DEFAULT 1,
+      provider TEXT,
       model TEXT NOT NULL,
       temperature REAL DEFAULT 0.7,
       max_tokens INTEGER,
@@ -134,6 +135,39 @@ function applySchema() {
 
     INSERT OR IGNORE INTO channels(id, type, name, enabled, config, status, created_at, updated_at)
     VALUES ('napcat', 'qq', 'QQ (NapCat)', 0, '{"ws_url":"ws://127.0.0.1:8080","token":""}', 'disconnected', 0, 0);
+
+    CREATE TABLE IF NOT EXISTS settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS model_providers (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      provider TEXT NOT NULL,
+      api_key TEXT NOT NULL DEFAULT '',
+      base_url TEXT NOT NULL DEFAULT '',
+      models TEXT NOT NULL DEFAULT '[]',
+      is_default INTEGER NOT NULL DEFAULT 0,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS token_usage (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      provider_id TEXT NOT NULL,
+      model TEXT NOT NULL,
+      prompt_tokens INTEGER NOT NULL DEFAULT 0,
+      completion_tokens INTEGER NOT NULL DEFAULT 0,
+      total_tokens INTEGER NOT NULL DEFAULT 0,
+      agent_id TEXT,
+      user_id TEXT,
+      created_at INTEGER NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_token_usage_provider ON token_usage(provider_id);
+    CREATE INDEX IF NOT EXISTS idx_token_usage_created ON token_usage(created_at);
   `);
 }
 
@@ -155,6 +189,20 @@ export function queryOne(sql: string, params: any[] = []): any | undefined {
   return rows[0];
 }
 
+let saveTimeout: any = null;
+
+function scheduleSave() {
+  if (saveTimeout) return;
+  saveTimeout = setTimeout(() => {
+    saveTimeout = null;
+    saveDb();
+  }, 200);
+}
+
+export function flushDb() {
+  if (saveTimeout) { clearTimeout(saveTimeout); saveTimeout = null; saveDb(); }
+}
+
 // Helper: run a statement
 export function runStmt(sql: string, params: any[] = []): void {
   if (params.length) {
@@ -165,5 +213,5 @@ export function runStmt(sql: string, params: any[] = []): void {
   } else {
     db.run(sql);
   }
-  saveDb();
+  scheduleSave();
 }

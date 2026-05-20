@@ -86,6 +86,39 @@ select.form-control{appearance:none;background:url("data:image/svg+xml,%3Csvg xm
 .mt-2{margin-top:8px}
 .gap-4{gap:4px}
 .truncate{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Logs */
+.log-info td{background:transparent}
+.log-warn td{background:#fff8e1}
+.log-error td{background:#ffebee}
+.log-tag{font-size:.65rem;padding:2px 6px;border-radius:4px;font-weight:600}
+.log-tag-info{background:#e3f2fd;color:#1565c0}
+.log-tag-warn{background:#fff3cd;color:#856404}
+.log-tag-error{background:#f8d7da;color:#721c24}
+.log-tag-debug{background:#e8eaf6;color:#3949ab}
+.btn-group{display:flex;gap:2px}
+.btn-group .btn{border-radius:0;padding:4px 10px;font-size:.72rem}
+.btn-group .btn:first-child{border-radius:6px 0 0 6px}
+.btn-group .btn:last-child{border-radius:0 6px 6px 0}
+.btn-group .btn.active{background:#667eea;color:#fff;border-color:#667eea}
+.terminal{background:#0d1117;border-radius:10px;padding:6px 0;font-family:'Cascadia Code','Fira Code','JetBrains Mono','Consolas',monospace;font-size:.78rem;line-height:1.5;max-height:600px;overflow-y:auto}
+.terminal-empty{padding:40px;text-align:center;color:#484f58;font-family:inherit}
+.terminal .line{padding:3px 14px;white-space:pre-wrap;word-break:break-all;border-left:3px solid transparent}
+.terminal .line-error{background:#290a0d;border-left-color:#f85149}
+.terminal .line-warn{background:#1d1a0b;border-left-color:#d29922}
+.terminal .line-info{color:#e6edf3}
+.terminal .line-debug{color:#484f58}
+.terminal .line .ts{color:#484f58;font-size:.72rem}
+.terminal .line .level{display:inline-block;width:40px;font-weight:600;font-size:.7rem}
+.terminal .line-info .level{color:#3fb950}
+.terminal .line-warn .level{color:#d29922}
+.terminal .line-error .level{color:#f85149}
+.terminal .line-debug .level{color:#484f58}
+.terminal .line .comp{display:inline-block;width:100px;color:#58a6ff;font-size:.72rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
+.terminal .line .msg{color:inherit}
+.terminal .line .meta-inline{color:#8b949e;font-size:.7rem}
+.terminal .line .elapsed{color:#484f58;font-size:.7rem;margin-left:8px}
+.terminal .line .trace-tag{display:inline-block;padding:1px 5px;border-radius:3px;font-size:.65rem;background:#1c2333;color:#58a6ff;font-family:monospace;margin-left:4px;vertical-align:middle}
+.terminal .line .msg .meta{margin:4px 0 2px 0;padding:6px 8px;background:#161b22;border-radius:4px;color:#8b949e;font-size:.72rem;white-space:pre;overflow-x:auto;display:block;line-height:1.4}
 @media(max-width:768px){.layout{flex-direction:column;padding:16px}.sidebar{width:100%;display:flex;gap:4px;overflow-x:auto;padding-bottom:8px}.sidebar .nav-item{white-space:nowrap;flex-shrink:0;margin-bottom:0}.header{padding:0 16px}}
 /* Login */
 .login-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;z-index:999}
@@ -117,23 +150,48 @@ select.form-control{appearance:none;background:url("data:image/svg+xml,%3Csvg xm
   </div>
   <div style="display:flex;align-items:center;gap:16px;font-size:.8rem;opacity:.8">
     <span id="header-status">● 运行中</span>
+    <a style="color:rgba(255,255,255,.7);cursor:pointer;font-size:.72rem" onclick="exportData()">导出</a>
+    <a style="color:rgba(255,255,255,.7);cursor:pointer;font-size:.72rem" onclick="document.getElementById('import-file').click()">导入</a>
+    <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
     <a style="color:rgba(255,255,255,.7);cursor:pointer;font-size:.72rem" onclick="doLogout()">退出</a>
   </div>
 </div>
 
 <div class="layout" style="display:none">
   <div class="sidebar" id="sidebar">
-    <div class="nav-item active" data-tab="agents"><span class="ico">🤖</span> Agent 管理</div>
+    <div class="nav-item active" data-tab="chat"><span class="ico">💭</span> 在线对话</div>
+    <div class="nav-item" data-tab="agents"><span class="ico">🤖</span> Agent 管理</div>
     <div class="nav-item" data-tab="channels"><span class="ico">📡</span> 通道管理</div>
     <div class="nav-item" data-tab="kb"><span class="ico">📚</span> 知识库</div>
     <div class="nav-item" data-tab="tools"><span class="ico">🔧</span> 工具管理</div>
+    <div class="nav-item" data-tab="messages"><span class="ico">✉️</span> 消息记录</div>
     <div class="nav-item" data-tab="traces"><span class="ico">📋</span> 追踪日志</div>
+    <div class="nav-item" data-tab="logs"><span class="ico">📝</span> 运行日志</div>
     <div class="nav-item" data-tab="sessions"><span class="ico">💬</span> 会话管理</div>
+    <div class="nav-item" data-tab="providers"><span class="ico">🏭</span> 供应商</div>
+    <div class="nav-item" data-tab="settings"><span class="ico">⚙️</span> 系统设置</div>
   </div>
 
   <div class="main">
+    <!-- ===== Chat ===== -->
+    <div class="panel active" id="panel-chat">
+      <div class="page-header">
+        <div><h2>在线对话</h2><div class="sub">直接在浏览器中与 Agent 对话</div></div>
+        <div><button class="btn btn-outline btn-sm" onclick="clearChat()">清空</button></div>
+      </div>
+      <div class="card" style="padding:0;display:flex;flex-direction:column;height:500px">
+        <div id="chat-messages" style="flex:1;overflow-y:auto;padding:16px;font-size:.82rem">
+          <div style="color:#b2bec3;text-align:center;padding:40px 0">发送消息开始对话</div>
+        </div>
+        <div style="border-top:1px solid #eef0f6;padding:12px 16px;display:flex;gap:8px">
+          <input class="form-control" id="chat-input" placeholder="输入消息..." style="flex:1" onkeydown="if(event.key==='Enter')sendChat()">
+          <button class="btn btn-primary" onclick="sendChat()">发送</button>
+        </div>
+      </div>
+    </div>
+
     <!-- ===== Agents ===== -->
-    <div class="panel active" id="panel-agents">
+    <div class="panel" id="panel-agents">
       <div class="page-header">
         <div><h2>Agent</h2><div class="sub">管理所有 AI 角色的配置与状态</div></div>
         <button class="btn btn-primary" onclick="showCreateModal()">＋ 新建 Agent</button>
@@ -156,10 +214,12 @@ select.form-control{appearance:none;background:url("data:image/svg+xml,%3Csvg xm
         <div><button class="btn btn-outline btn-sm" onclick="reindexKB()">重新索引</button></div>
       </div>
       <div class="card" style="padding:14px 18px">
-        <div style="font-size:.82rem;font-weight:600;margin-bottom:8px">📄 文档列表 <span style="font-weight:400;font-size:.72rem;color:#b2bec3">— 文件放在 data/kb/ 下，或在线新建</span></div>
-        <div style="display:flex;gap:6px;margin-bottom:10px">
-          <input class="form-control" id="kb-filename" placeholder="文件名（如 guide.txt）" style="width:200px">
-          <button class="btn btn-primary btn-sm" onclick="uploadKBDoc()">新建</button>
+        <div style="font-size:.82rem;font-weight:600;margin-bottom:8px">📄 文档列表 <span style="font-weight:400;font-size:.72rem;color:#b2bec3">— 上传 .txt/.md 文件或在线新建</span></div>
+        <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+          <input type="file" id="kb-filepicker" accept=".txt,.md" style="display:none" onchange="uploadKBFile(event)">
+          <button class="btn btn-primary btn-sm" onclick="$('kb-filepicker').click()">📁 上传文件</button>
+          <input class="form-control" id="kb-filename" placeholder="文件名" style="width:140px">
+          <button class="btn btn-outline btn-sm" onclick="showNewKBDoc()">＋ 新建</button>
         </div>
         <div id="kb-docs" style="font-size:.78rem;color:#636e72">加载中...</div>
       </div>
@@ -181,6 +241,23 @@ select.form-control{appearance:none;background:url("data:image/svg+xml,%3Csvg xm
       <div class="card" style="padding:14px 18px">
         <div style="font-size:.82rem;font-weight:600;margin-bottom:8px">🔧 已注册工具</div>
         <div id="tool-list"></div>
+      </div>
+    </div>
+
+    <!-- ===== Messages ===== -->
+    <div class="panel" id="panel-messages">
+      <div class="page-header">
+        <div><h2>消息记录</h2><div class="sub">查看所有用户的对话历史</div></div>
+        <div>
+          <select class="form-control" style="width:auto;display:inline-block;padding:4px 28px 4px 8px;font-size:.72rem" id="msg-user-filter" onchange="loadMessages()">
+            <option value="">全部用户</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr>
+          <th>时间</th><th>用户</th><th>角色</th><th>内容</th>
+        </tr></thead><tbody id="message-list"></tbody></table>
       </div>
     </div>
 
@@ -207,8 +284,76 @@ select.form-control{appearance:none;background:url("data:image/svg+xml,%3Csvg xm
         </tr></thead><tbody id="session-list"></tbody></table>
       </div>
     </div>
+
+    <!-- ===== Logs ===== -->
+    <div class="panel" id="panel-logs">
+      <div class="page-header">
+        <div><h2>运行日志</h2><div class="sub">系统运行日志 · traceId / 关键词搜索</div></div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <input type="text" id="log-search" placeholder="🔍 traceId 或关键词" style="width:160px;padding:4px 8px;font-size:.75rem;border:1px solid #dcdde1;border-radius:6px;background:#fff" onkeydown="if(event.key==='Enter')loadLogs()">
+          <div class="btn-group" id="log-level-filter">
+            <button class="btn btn-sm" data-level="" onclick="setLogLevel('')">全部</button>
+            <button class="btn btn-sm" data-level="info" onclick="setLogLevel('info')">INFO</button>
+            <button class="btn btn-sm" data-level="warn" onclick="setLogLevel('warn')">WARN</button>
+            <button class="btn btn-sm" data-level="error" onclick="setLogLevel('error')">ERROR</button>
+            <button class="btn btn-sm" data-level="debug" onclick="setLogLevel('debug')">DEBUG</button>
+            <button class="btn btn-sm" data-level="audit" onclick="setLogLevel('audit')">AUDIT</button>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="loadLogs()">🔄</button>
+        </div>
+      </div>
+      <div class="terminal" id="log-list"><div class="terminal-empty">暂无日志</div></div>
+      <div style="margin-top:8px;display:flex;align-items:center;gap:8px;font-size:.75rem;color:#b2bec3">
+        <span id="log-count"></span>
+        <span style="flex:1"></span>
+        <button class="btn btn-outline btn-sm" onclick="toggleLogAutoRefresh()" id="log-auto-refresh-btn">⏸ 暂停</button>
+      </div>
+    </div>
+
+    <!-- ===== Settings ===== -->
+    <div class="panel" id="panel-settings">
+      <div class="page-header">
+        <div><h2>系统设置</h2><div class="sub">配置大模型连接</div></div>
+        <div><button class="btn btn-primary btn-sm" onclick="saveLlmSettings()">保存</button></div>
+      </div>
+      <div class="card" style="padding:18px 22px;max-width:520px">
+        <div class="form-group">
+          <label>接口提供商</label>
+          <select class="form-control" id="s-provider">
+            <option value="deepseek">DeepSeek</option>
+            <option value="openai">OpenAI</option>
+            <option value="custom">自定义</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>API Key</label>
+          <input class="form-control" id="s-apikey" type="password" placeholder="sk-...">
+          <div style="font-size:.68rem;color:#b2bec3;margin-top:4px">已保存的 key 不会完整显示，重新输入会覆盖</div>
+        </div>
+        <div class="form-group">
+          <label>接口地址</label>
+          <input class="form-control" id="s-baseurl" placeholder="https://api.deepseek.com/v1">
+        </div>
+        <div class="form-group">
+          <label>模型名称</label>
+          <input class="form-control" id="s-model" placeholder="deepseek-chat">
+        </div>
+        <div class="form-group">
+          <label>温度 (0-2)</label>
+          <input class="form-control" id="s-temp" type="number" step="0.1" min="0" max="2" value="0.7">
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Model Providers ===== -->
+    <div class="panel" id="panel-providers">
+      <div class="page-header">
+        <div><h2>模型供应商</h2><div class="sub">管理多个 LLM 供应商，Agent 可选不同供应商</div></div>
+        <div><button class="btn btn-primary btn-sm" onclick="showProviderModal()">＋ 添加供应商</button></div>
+      </div>
+      <div id="provider-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px"></div>
+    </div>
   </div>
-</div>
 
 <!-- ===== Modal ===== -->
 <div class="modal-overlay" id="modal">
@@ -227,6 +372,12 @@ select.form-control{appearance:none;background:url("data:image/svg+xml,%3Csvg xm
       <input class="form-control" id="f-model" value="deepseek-chat">
     </div>
     <div class="form-group">
+      <label>供应商（留空使用默认）</label>
+      <select class="form-control" id="f-provider">
+        <option value="">默认供应商</option>
+      </select>
+    </div>
+    <div class="form-group">
       <label>温度 (0-2)</label>
       <input class="form-control" id="f-temp" type="number" step="0.1" min="0" max="2" value="0.7">
     </div>
@@ -239,11 +390,20 @@ select.form-control{appearance:none;background:url("data:image/svg+xml,%3Csvg xm
       <input class="form-control" id="f-greeting" placeholder="你好呀！我是...">
     </div>
     <div class="form-group">
+      <label>人格设定（可选）</label>
+      <input class="form-control" id="f-persona" placeholder="你是一个热情友好的助手">
+    </div>
+    <div class="form-group">
+      <label>工具列表（逗号分隔）</label>
+      <input class="form-control" id="f-tools" placeholder="web_search, retrieve_knowledge, get_time">
+    </div>
+    <div class="form-group">
       <label>路由类型</label>
       <select class="form-control" id="f-route">
         <option value="catchall">catchall（兜底）</option>
         <option value="command">command（命令触发）</option>
         <option value="keyword">keyword（关键词触发）</option>
+        <option value="llm_match">llm_match（LLM 判断）</option>
       </select>
     </div>
     <div class="modal-actions">
@@ -254,9 +414,59 @@ select.form-control{appearance:none;background:url("data:image/svg+xml,%3Csvg xm
   </div>
 </div>
 
+<!-- ===== Provider Modal ===== -->
+<div class="modal-overlay" id="provider-modal">
+  <div class="modal">
+    <h3 id="provider-modal-title">添加供应商</h3>
+    <div class="form-group">
+      <label>名称</label>
+      <input class="form-control" id="p-name" placeholder="例如: DeepSeek">
+    </div>
+    <div class="form-group">
+      <label>供应商类型</label>
+      <select class="form-control" id="p-type">
+        <option value="openai">OpenAI 兼容</option>
+        <option value="deepseek">DeepSeek</option>
+        <option value="custom">自定义</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>API Key</label>
+      <input class="form-control" id="p-apikey" type="password" placeholder="sk-...">
+    </div>
+    <div class="form-group">
+      <label>接口地址</label>
+      <input class="form-control" id="p-baseurl" placeholder="https://api.deepseek.com/v1">
+    </div>
+    <div class="form-group">
+      <label>模型列表（JSON 数组，逗号分隔也会自动转）</label>
+      <input class="form-control" id="p-models" placeholder="deepseek-chat, deepseek-reasoner">
+    </div>
+    <div class="form-group">
+      <label><input type="checkbox" id="p-default"> 设为默认供应商</label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeProviderModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveProvider()">保存</button>
+    </div>
+    <input type="hidden" id="p-edit-id">
+  </div>
+</div>
+
+<!-- ===== Provider Detail Modal ===== -->
+<div class="modal-overlay" id="provider-detail-modal">
+  <div class="modal" style="width:560px">
+    <h3 id="pd-title">供应商详情</h3>
+    <div id="pd-content" style="font-size:.82rem;line-height:1.7"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeProviderDetail()">关闭</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const BASE = '/api';
-let state = { agents: [], channels: [], traces: [], sessions: [], kb: { docs: [], chunks: [] }, tools: [] };
+let state = { agents: [], channels: [], traces: [], sessions: [], kb: { docs: [], chunks: [] }, tools: [], providers: [] };
 let AUTH_TOKEN = localStorage.getItem('auth_token') || '';
 
 function $(id) { return document.getElementById(id); }
@@ -271,20 +481,40 @@ async function api(path, opts) {
     showLogin();
     return null;
   }
+  if (!res.ok && res.status !== 401) {
+    const body = await res.json().catch(() => ({}));
+    console.error('API 错误:', path, res.status, body);
+    return { error: body.error || `请求失败 (${res.status})` };
+  }
   return res.json();
+}
+
+function parseModels(v) {
+  if (!v) return [];
+  if (typeof v === 'string') {
+    try { const r = JSON.parse(v); if (Array.isArray(r)) return r; } catch {}
+    return v.split(',').map(s => s.trim()).filter(Boolean);
+  }
+  return [];
 }
 
 // === Auth ===
 async function doLogin() {
   const pwd = $('login-pwd').value;
-  const r = await api('/auth/login', { method: 'POST', body: JSON.stringify({ password: pwd }) });
-  if (r && r.ok) {
-    AUTH_TOKEN = r.token;
-    localStorage.setItem('auth_token', r.token);
-    $('login-screen').style.display = 'none';
-    document.querySelector('.layout').style.display = 'flex';
-    initAll();
-  } else {
+  try {
+    const r = await api('/auth/login', { method: 'POST', body: JSON.stringify({ password: pwd }) });
+    if (r && r.ok) {
+      AUTH_TOKEN = r.token;
+      localStorage.setItem('auth_token', r.token);
+      $('login-screen').style.display = 'none';
+      document.querySelector('.layout').style.display = 'flex';
+      initAll();
+    } else {
+      $('login-error').style.display = 'block';
+    }
+  } catch (e) {
+    console.error('登录请求失败:', e);
+    $('login-error').textContent = '连接失败: ' + (e.message || '未知错误');
     $('login-error').style.display = 'block';
   }
 }
@@ -303,13 +533,126 @@ function showLogin() {
   $('login-error').style.display = 'none';
 }
 
+// === Chat ===
+let chatHistory = [];
+const WS_URL = `ws://${location.host}/ws`;
+let ws = null;
+
+function connectWs() {
+  if (ws) return;
+  try {
+    ws = new WebSocket(`${WS_URL}?token=${encodeURIComponent(AUTH_TOKEN)}`);
+    ws.onmessage = (e) => {
+      try {
+        const msg = JSON.parse(e.data);
+        if (msg.type === 'agent.handleMessage') {
+          // 实时推送，目前仅做日志
+        }
+      } catch {}
+    };
+    ws.onclose = () => { ws = null; setTimeout(connectWs, 5000); };
+    ws.onerror = () => { ws = null; };
+  } catch {}
+}
+
+async function sendChat() {
+  const input = $('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  let userId = localStorage.getItem('chat_user_id');
+  if (!userId) { userId = 'web_' + Date.now(); localStorage.setItem('chat_user_id', userId); }
+  appendChatMsg('user', text);
+  const loadingDiv = appendChatMsg('assistant', '思考中...');
+  const r = await api('/chat', { method: 'POST', body: JSON.stringify({ text, userId }) });
+  const msgs = $('chat-messages');
+  if (loadingDiv && loadingDiv.parentNode) msgs.removeChild(loadingDiv);
+  if (r && r.reply) {
+    appendChatMsg('assistant', r.reply);
+  } else {
+    appendChatMsg('assistant', '请求失败');
+  }
+}
+
+function appendChatMsg(role, text) {
+  const div = document.createElement('div');
+  const ts = new Date().toLocaleTimeString();
+  div.style.cssText = 'margin-bottom:12px;display:flex;gap:8px';
+  div.innerHTML = `
+    <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0;${role==='user'?'background:#667eea;color:#fff':'background:#eef0f6;color:#636e72'}">${role==='user'?'你':'🤖'}</div>
+    <div style="flex:1">
+      <div style="font-size:.65rem;color:#b2bec3;margin-bottom:2px">${ts}</div>
+      <div style="background:${role==='user'?'#eef3ff':'#fff'};padding:8px 12px;border-radius:8px;font-size:.8rem;line-height:1.6;white-space:pre-wrap">${esc(text)}</div>
+    </div>
+  `;
+  $('chat-messages').appendChild(div);
+  div.scrollIntoView({ block: 'end' });
+  return div;
+}
+
+function clearChat() {
+  $('chat-messages').innerHTML = '<div style="color:#b2bec3;text-align:center;padding:40px 0">发送消息开始对话</div>';
+}
+
+// === Messages ===
+async function loadMessages() {
+  const userId = $('msg-user-filter').value;
+  const url = userId ? `/messages?userId=${encodeURIComponent(userId)}` : '/messages';
+  const rows = await api(url);
+  $('message-list').innerHTML = rows.length
+    ? rows.slice(0, 100).map(m => `<tr>
+        <td style="font-size:.68rem;color:#b2bec3;white-space:nowrap">${new Date(m.timestamp).toLocaleString()}</td>
+        <td style="font-size:.75rem">${esc(m.user_id || '')}</td>
+        <td><span class="tag ${m.role==='user'?'info':'on'}">${m.role}</span></td>
+        <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc((m.text||'').slice(0,80))}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="4"><div class="empty"><p>暂无消息记录</p></div></td></tr>';
+}
+
+async function loadMsgUsers() {
+  const users = await api('/messages/users');
+  if (!users) return;
+  const sel = $('msg-user-filter');
+  sel.innerHTML = '<option value="">全部用户</option>' + users.map(u => `<option value="${u.user_id}">${esc(u.user_id)} (${u.count})</option>`).join('');
+}
+
+// === Export / Import ===
+async function exportData() {
+  const data = await api('/export');
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `ai-platform-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+
+async function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const text = await file.text();
+  try {
+    const data = JSON.parse(text);
+    const r = await api('/import', { method: 'POST', body: JSON.stringify(data) });
+    if (!r) return;
+    alert(`导入完成: ${r.imported} 条记录`);
+    location.reload();
+  } catch (e) {
+    alert('导入失败: ' + e.message);
+  }
+}
+
 async function checkAuth() {
   if (!AUTH_TOKEN) { showLogin(); return false; }
-  const r = await api('/auth/check');
-  if (r && r.ok) {
-    $('login-screen').style.display = 'none';
-    document.querySelector('.layout').style.display = 'flex';
-    return true;
+  try {
+    const r = await api('/auth/check');
+    if (r && r.ok) {
+      $('login-screen').style.display = 'none';
+      document.querySelector('.layout').style.display = 'flex';
+      return true;
+    }
+  } catch (e) {
+    console.error('Auth check error:', e);
   }
   AUTH_TOKEN = '';
   localStorage.removeItem('auth_token');
@@ -334,9 +677,12 @@ function showCreateModal() {
   $('f-id').disabled = false;
   $('f-name').value = '';
   $('f-model').value = 'deepseek-chat';
+  $('f-provider').value = '';
   $('f-temp').value = '0.7';
   $('f-prompt').value = '';
   $('f-greeting').value = '';
+  $('f-persona').value = '';
+  $('f-tools').value = '';
   $('f-route').value = 'catchall';
   $('f-edit-id').value = '';
   $('modal').classList.add('show');
@@ -350,9 +696,12 @@ function showEditModal(id) {
   $('f-id').disabled = true;
   $('f-name').value = a.name || '';
   $('f-model').value = a.model;
+  $('f-provider').value = a.provider || '';
   $('f-temp').value = a.temperature ?? 0.7;
   $('f-prompt').value = a.systemPrompt || '';
   $('f-greeting').value = a.greeting || '';
+  $('f-persona').value = a.persona || '';
+  $('f-tools').value = (a.tools || []).join(', ');
   $('f-route').value = a.route?.type || 'catchall';
   $('f-edit-id').value = a.id;
   $('modal').classList.add('show');
@@ -361,15 +710,18 @@ function showEditModal(id) {
 function closeModal() { $('modal').classList.remove('show'); }
 
 async function saveAgent() {
+  const toolsStr = $('f-tools').value.trim();
   const body = {
     id: $('f-id').value.trim(),
     name: $('f-name').value.trim() || $('f-id').value.trim(),
     model: $('f-model').value.trim(),
+    provider: $('f-provider').value || undefined,
     temperature: parseFloat($('f-temp').value) || 0.7,
     systemPrompt: $('f-prompt').value.trim(),
     greeting: $('f-greeting').value.trim() || null,
+    persona: $('f-persona').value.trim() || null,
+    tools: toolsStr ? toolsStr.split(',').map(s => s.trim()).filter(Boolean) : [],
     route: { type: $('f-route').value },
-    tools: [],
     mcpServers: [],
   };
   if (!body.id) return alert('请输入 Agent ID');
@@ -387,7 +739,8 @@ async function saveAgent() {
 
 // === Agents ===
 async function loadAgents() {
-  state.agents = await api('/agents');
+  $('agent-list').innerHTML = '<div class="empty"><p>加载中...</p></div>';
+  state.agents = (await api('/agents')) || [];
   const list = $('agent-list');
   if (!state.agents.length) {
     list.innerHTML = '<div class="empty"><div class="ico">🤖</div><p>暂无 Agent，点击右上角新建</p></div>';
@@ -556,10 +909,23 @@ async function reindexKB() {
   loadKB();
 }
 
-async function uploadKBDoc() {
+async function uploadKBFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const name = file.name;
+  const content = await file.text();
+  await api('/knowledge/upload', {
+    method: 'POST',
+    body: JSON.stringify({ name, content }),
+  });
+  event.target.value = '';
+  loadKB();
+}
+
+async function showNewKBDoc() {
   const name = $('kb-filename').value.trim();
   if (!name) return alert('请输入文件名');
-  const content = prompt(`请输入 ${name} 的内容:`);
+  const content = window.prompt ? window.prompt(`请输入 ${name} 的内容:`) : '';
   if (content === null) return;
   await api('/knowledge/upload', {
     method: 'POST',
@@ -603,13 +969,263 @@ async function disconnectExternalMCP() {
 }
 
 function esc(s) {
-  return String(s).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[m]);
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"})[m]);
+}
+
+// === Settings ===
+async function loadLlmSettings() {
+  const s = await api('/settings/llm');
+  if (!s) return;
+  $('s-provider').value = s.provider || 'deepseek';
+  $('s-apikey').value = s._hasKey ? '••••••••' : '';
+  $('s-baseurl').value = s.baseUrl || 'https://api.deepseek.com/v1';
+  $('s-model').value = s.model || 'deepseek-chat';
+  $('s-temp').value = s.temperature ?? 0.7;
+}
+
+async function saveLlmSettings() {
+  const body = {
+    provider: $('s-provider').value,
+    apiKey: $('s-apikey').value,
+    baseUrl: $('s-baseurl').value.trim(),
+    model: $('s-model').value.trim(),
+    temperature: parseFloat($('s-temp').value) || 0.7,
+  };
+  if (!body.baseUrl) return alert('请输入接口地址');
+  if (!body.model) return alert('请输入模型名称');
+  const r = await api('/settings/llm', { method: 'PUT', body: JSON.stringify(body) });
+  if (r && r.ok) { alert('保存成功'); loadLlmSettings(); }
+}
+
+// === Providers ===
+async function loadProviders() {
+  state.providers = (await api('/providers')) || [];
+  $('provider-list').innerHTML = state.providers.length
+    ? state.providers.map(p => {
+        const models = parseModels(p.models);
+        return `<div class="card" style="cursor:pointer" onclick="showProviderDetail('${p.id}')">
+          <div class="card-header">
+            <div style="width:40px;height:40px;border-radius:12px;background:${p.isDefault ? 'linear-gradient(135deg,#667eea,#764ba2)' : '#f0f0f0'};display:flex;align-items:center;justify-content:center;color:${p.isDefault ? '#fff' : '#636e72'};font-size:1.1rem">${p.provider === 'openai' ? '🤖' : p.provider === 'deepseek' ? '🧠' : '⚙️'}</div>
+            <div style="flex:1"><h3>${esc(p.name)} ${p.isDefault ? '<span class="tag info">默认</span>' : ''}</h3>
+              <div style="font-size:.72rem;color:#b2bec3">${esc(p.id)} · ${esc(p.provider)}</div>
+            </div>
+            <div>
+              <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();editProvider('${p.id}')">编辑</button>
+              <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteProvider('${p.id}')">删除</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:.75rem">
+              <span>🔗 ${esc(p.baseUrl)}</span>
+              <span>📦 ${models.join(', ')}</span>
+            </div>
+          </div>
+          <div class="card-meta">
+            <span id="p-usage-${p.id}">⏳ 加载用量...</span>
+            <span id="p-agents-${p.id}"></span>
+          </div>
+        </div>`;
+      }).join('')
+    : '<div class="empty"><div class="ico">🏭</div><p>暂无供应商，点击右上角添加</p></div>';
+  // Refresh agent edit provider dropdown
+  const sel = $('f-provider');
+  if (sel) {
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">默认供应商</option>' + state.providers.map(p => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
+    sel.value = cur;
+  }
+  // Load stats for each provider
+  state.providers.forEach(async p => {
+    const stats = await api('/providers/' + p.id + '/stats');
+    if (!stats) return;
+    $('p-usage-' + p.id).textContent = `🔤 ${formatTokens(stats.tokenStats.totalTokens)} (${stats.tokenStats.callCount} 次调用)`;
+    $('p-agents-' + p.id).textContent = `🤖 ${stats.agentCount} 个 Agent 使用`;
+  });
+}
+
+function formatTokens(n) {
+  if (!n) return '0';
+  if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+  if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+  return String(n);
+}
+
+async function showProviderDetail(id) {
+  const p = state.providers.find(x => x.id === id);
+  if (!p) return;
+  const stats = await api('/providers/' + id + '/stats');
+  const agents = await api('/providers/' + id + '/agents');
+  const models = parseModels(p.models);
+  const ts = stats?.tokenStats || {};
+  const agentRows = (agents || []).map(a => `<div style="padding:4px 0">🤖 ${esc(a.name || a.id)}</div>`).join('') || '<div style="color:#b2bec3">无 Agent 使用此供应商</div>';
+  $('pd-title').textContent = `📊 ${esc(p.name)} 详情`;
+  $('pd-content').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div class="card" style="padding:12px;text-align:center">
+        <div style="font-size:1.2rem;font-weight:700;color:#667eea">${formatTokens(ts.totalTokens || 0)}</div>
+        <div style="font-size:.7rem;color:#b2bec3">总 Token 消耗</div>
+      </div>
+      <div class="card" style="padding:12px;text-align:center">
+        <div style="font-size:1.2rem;font-weight:700;color:#27ae60">${ts.callCount || 0}</div>
+        <div style="font-size:.7rem;color:#b2bec3">总调用次数</div>
+      </div>
+    </div>
+    <div style="margin-bottom:12px">
+      <div style="font-weight:600;font-size:.82rem;margin-bottom:6px">⚙️ 配置</div>
+      <div style="font-size:.75rem;color:#636e72;line-height:1.8">
+        <div>类型: ${esc(p.provider)}</div>
+        <div>地址: ${esc(p.baseUrl)}</div>
+        <div>模型: ${models.join(', ')}</div>
+        <div>API Key: ${p.apiKey ? p.apiKey.slice(0, 8) + '****' : '未设置'}</div>
+        <div>默认: ${p.isDefault ? '✅ 是' : '❌ 否'}</div>
+      </div>
+    </div>
+    ${ts.modelBreakdown?.length ? `
+    <div style="margin-bottom:12px">
+      <div style="font-weight:600;font-size:.82rem;margin-bottom:6px">📈 各模型用量</div>
+      ${ts.modelBreakdown.map(m => `
+        <div style="display:flex;justify-content:space-between;font-size:.75rem;padding:4px 0;border-bottom:1px solid #f0f0f0">
+          <span>${esc(m.model)}</span>
+          <span>${formatTokens(m.totalTokens)} tokens · ${m.callCount} 次</span>
+        </div>
+      `).join('')}
+    </div>` : ''}
+    <div>
+      <div style="font-weight:600;font-size:.82rem;margin-bottom:6px">🤖 使用此供应商的 Agent</div>
+      ${agentRows}
+    </div>
+  `;
+  $('provider-detail-modal').classList.add('show');
+}
+
+function closeProviderDetail() {
+  $('provider-detail-modal').classList.remove('show');
+}
+
+function showProviderModal(data) {
+  $('p-edit-id').value = data ? data.id : '';
+  $('provider-modal-title').textContent = data ? '编辑供应商' : '添加供应商';
+  $('p-name').value = data ? data.name : '';
+  $('p-type').value = data ? data.provider : 'openai';
+  $('p-apikey').value = '';
+  $('p-baseurl').value = data ? data.baseUrl : 'https://api.deepseek.com/v1';
+  $('p-models').value = data ? parseModels(data.models).join(', ') : '';
+  $('p-default').checked = data ? !!data.isDefault : false;
+  $('provider-modal').classList.add('show');
+}
+
+function closeProviderModal() {
+  $('provider-modal').classList.remove('show');
+}
+
+async function saveProvider() {
+  const isEdit = !!$('p-edit-id').value;
+  const body = {
+    name: $('p-name').value.trim(),
+    provider: $('p-type').value,
+    apiKey: $('p-apikey').value.trim(),
+    baseUrl: $('p-baseurl').value.trim(),
+    models: JSON.stringify(parseModels($('p-models').value)),
+    isDefault: $('p-default').checked ? 1 : 0,
+  };
+  if (!body.name) return alert('请输入名称');
+  if (!body.baseUrl) return alert('请输入接口地址');
+  const r = isEdit
+    ? await api('/providers/' + $('p-edit-id').value, { method: 'PUT', body: JSON.stringify(body) })
+    : await api('/providers', { method: 'POST', body: JSON.stringify(body) });
+  if (r && !r.error) { closeProviderModal(); loadProviders(); }
+  else if (r && r.error) { alert('保存失败: ' + r.error); }
+}
+
+async function editProvider(id) {
+  const p = state.providers.find(x => x.id === id);
+  if (p) showProviderModal(p);
+}
+
+async function deleteProvider(id) {
+  if (!confirm('确定删除此供应商？')) return;
+  await api('/providers/' + id, { method: 'DELETE' });
+  loadProviders();
+}
+
+// === Logs ===
+let logLevel = '';
+let logAutoRefresh = true;
+let logTimer = null;
+
+function setLogLevel(level) {
+  logLevel = level;
+  document.querySelectorAll('#log-level-filter .btn').forEach(b => b.classList.toggle('active', b.dataset.level === level));
+  loadLogs();
+}
+
+async function loadLogs() {
+  const params = new URLSearchParams({ level: logLevel });
+  const q = $('log-search')?.value?.trim();
+  if (q) {
+    // auto-detect: if it looks like a traceId (shorter than 20, hex-like), search by traceId
+    if (/^[0-9a-f]{6,20}$/i.test(q)) params.set('traceId', q);
+    else params.set('q', q);
+  }
+  params.set('limit', '500');
+  const r = await api('/logs?' + params.toString());
+  if (!r) return;
+  const container = $('log-list');
+  if (!r.entries?.length) {
+    container.innerHTML = '<div class="terminal-empty">暂无日志</div>';
+    $('log-count').textContent = '共 0 条';
+    return;
+  }
+  container.innerHTML = r.entries.map(e => {
+    const level = e.level || 'info';
+    // Parse "[Component] message"
+    let component = '';
+    let message = e.msg || '';
+    const m = message.match(/^\[([^\]]+)\]\s*(.*)/);
+    if (m) { component = m[1]; message = m[2]; }
+    // Build meta summary
+    const pairs = [];
+    if (e.duration_ms !== undefined) pairs.push(e.duration_ms + 'ms');
+    if (e.userId) pairs.push('User: ' + e.userId.slice(0,8));
+    if (e.agentId) pairs.push('Agent: ' + e.agentId);
+    if (e.meta) {
+      for (const [k, v] of Object.entries(e.meta)) {
+        if (k === 'elapsed') continue;
+        const val = typeof v === 'string' ? v : typeof v === 'number' ? v : JSON.stringify(v).slice(0,40);
+        pairs.push(k + ': ' + val);
+      }
+    }
+    const metaStr = pairs.length ? ' <span class="meta-inline">(' + esc(pairs.join(', ')) + ')</span>' : '';
+    // Trace ID
+    const traceHtml = e.traceId ? ' <span class="trace-tag">' + esc(e.traceId.slice(0,8)) + '</span>' : '';
+    const compHtml = component ? '<span class="comp">' + esc(component) + '</span> ' : '';
+    return '<div class="line line-' + level + '"><span class="ts">' + esc(e.ts) + '</span> <span class="level">' + level.toUpperCase() + '</span> ' + compHtml + '<span class="msg">' + esc(message) + '</span>' + metaStr + traceHtml + '</div>';
+  }).join('');
+  $('log-count').textContent = '共 ' + r.total + ' 条';
+  // Auto-scroll to bottom only if already near bottom
+  var atBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 60;
+  if (atBottom) container.scrollTop = container.scrollHeight;
+}
+
+function toggleLogAutoRefresh() {
+  logAutoRefresh = !logAutoRefresh;
+  if (logAutoRefresh) {
+    logTimer = setInterval(loadLogs, 5000);
+    $('log-auto-refresh-btn').textContent = '⏸ 暂停自动刷新';
+  } else {
+    clearInterval(logTimer);
+    logTimer = null;
+    $('log-auto-refresh-btn').textContent = '▶ 恢复自动刷新';
+  }
 }
 
 // === Init ===
 function initAll() {
-  loadAgents(); loadChannels(); loadKB(); loadTools(); loadTraces(); loadSessions();
+  connectWs();
+  loadAgents(); loadChannels(); loadKB(); loadTools(); loadMessages(); loadMsgUsers(); loadTraces(); loadSessions(); loadLlmSettings(); loadProviders(); loadLogs();
   setInterval(() => { loadTraces(); loadSessions(); loadChannels(); loadKB(); }, 5000);
+  setInterval(() => loadProviders(), 30000);
+  logTimer = setInterval(() => loadLogs(), 5000);
 }
 checkAuth();
 </script>

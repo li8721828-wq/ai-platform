@@ -47,6 +47,7 @@ export interface AgentDef {
   id: string;
   name?: string;
   enabled?: boolean;
+  provider?: string;
   model: string;
   temperature?: number;
   maxTokens?: number;
@@ -57,6 +58,18 @@ export interface AgentDef {
   tools: string[];
   mcpServers: string[];
   route: RouteDef;
+}
+
+export interface ModelProvider {
+  id: string;
+  name: string;
+  provider: string;
+  apiKey: string;
+  baseUrl: string;
+  models: string;
+  isDefault: number;
+  createdAt: number;
+  updatedAt: number;
 }
 
 export interface MCPTool {
