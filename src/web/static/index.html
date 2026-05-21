@@ -454,7 +454,7 @@ async function doLogin() {
       localStorage.setItem('auth_token', r.token);
       $('login-screen').style.display = 'none';
       document.querySelector('.layout').style.display = 'flex';
-checkAuth();
+      initAll();
     } else {
       $('login-error').style.display = 'block';
     }
@@ -1330,7 +1330,7 @@ function initAll() {
   setInterval(() => loadProviders(), 30000);
   logTimer = setInterval(() => loadLogs(), 5000);
 }
-initAll();
+checkAuth();
 </script>
 </body>
 </html>
