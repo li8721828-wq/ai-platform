@@ -18,6 +18,11 @@ export class ProviderManager {
   }
 
   create(data: Partial<ModelProvider>): ModelProvider {
+    const dup = queryOne(
+      'SELECT id, name FROM model_providers WHERE api_key = ? AND models = ?',
+      [data.apiKey || '', data.models || '[]'],
+    );
+    if (dup) throw new Error(`模型已存在: "${dup.name}" (${dup.id})，请勿重复添加`);
     const id = data.id || genId('prov_');
     const now = Date.now();
     runStmt(
