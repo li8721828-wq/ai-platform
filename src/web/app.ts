@@ -417,6 +417,28 @@ export function createApp(cfg: Config) {
     res.json(rows);
   });
 
+  app.post('/api/providers/test', async (req, res) => {
+    try {
+      const { apiKey, baseUrl, models } = req.body;
+      if (!apiKey) return res.status(400).json({ error: 'API Key 不能为空' });
+      if (!baseUrl) return res.status(400).json({ error: '接口地址不能为空' });
+      const modelList = Array.isArray(models) ? models : (typeof models === 'string' ? JSON.parse(models) : []);
+      const testModel = modelList[0] || 'gpt-3.5-turbo';
+      const { ChatOpenAI } = await import('@langchain/openai');
+      const llm = new ChatOpenAI({
+        apiKey,
+        configuration: { baseURL: baseUrl },
+        modelName: testModel,
+        temperature: 0,
+        maxRetries: 0,
+      });
+      const result = await llm.invoke([{ role: 'user', content: 'Hello' }]);
+      res.json({ success: true, model: result?.content?.slice?.(0, 50) || testModel });
+    } catch (e: any) {
+      res.json({ success: false, error: e.message || String(e) });
+    }
+  });
+
   // ===== Health =====
   app.get('/api/health', (_req, res) => res.json({ ok: true, uptime: process.uptime(), ts: Date.now() }));
   app.get('/api/version', (_req, res) => {

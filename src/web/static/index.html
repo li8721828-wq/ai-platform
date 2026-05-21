@@ -170,7 +170,7 @@ select.form-control{appearance:none;background:url("data:image/svg+xml,%3Csvg xm
     <div class="nav-item" data-tab="traces"><span class="ico">📋</span> 追踪日志</div>
     <div class="nav-item" data-tab="logs"><span class="ico">📝</span> 运行日志</div>
     <div class="nav-item" data-tab="sessions"><span class="ico">💬</span> 会话管理</div>
-    <div class="nav-item" data-tab="providers"><span class="ico">🏭</span> 供应商</div>
+    <div class="nav-item" data-tab="providers"><span class="ico">🏭</span> 模型供应</div>
     <div class="nav-item" data-tab="settings"><span class="ico">⚙️</span> 系统设置</div>
   </div>
 
@@ -350,8 +350,8 @@ select.form-control{appearance:none;background:url("data:image/svg+xml,%3Csvg xm
     <!-- ===== Model Providers ===== -->
     <div class="panel" id="panel-providers">
       <div class="page-header">
-        <div><h2>模型供应商</h2><div class="sub">管理多个 LLM 供应商，Agent 可选不同供应商</div></div>
-        <div><button class="btn btn-primary btn-sm" onclick="showProviderModal()">＋ 添加供应商</button></div>
+        <div><h2>模型供应</h2><div class="sub">管理多个 LLM 模型供应商，Agent 可选不同供应商</div></div>
+        <div><button class="btn btn-primary btn-sm" onclick="showProviderModal()">＋ 添加模型</button></div>
       </div>
       <div id="provider-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px"></div>
     </div>
@@ -419,7 +419,7 @@ select.form-control{appearance:none;background:url("data:image/svg+xml,%3Csvg xm
 <!-- ===== Provider Modal ===== -->
 <div class="modal-overlay" id="provider-modal">
   <div class="modal">
-    <h3 id="provider-modal-title">添加供应商</h3>
+    <h3 id="provider-modal-title">添加模型</h3>
     <div class="form-group">
       <label>名称</label>
       <input class="form-control" id="p-name" placeholder="例如: DeepSeek">
@@ -450,7 +450,9 @@ select.form-control{appearance:none;background:url("data:image/svg+xml,%3Csvg xm
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeProviderModal()">取消</button>
       <button class="btn btn-primary" onclick="saveProvider()">保存</button>
+      <button class="btn btn-outline" id="btn-test-provider" onclick="testProvider()" style="margin-left:auto;color:#2ecc71;border-color:#2ecc71">▶ 测试连接</button>
     </div>
+    <div id="test-result" style="margin-top:8px;font-size:.75rem;display:none"></div>
     <input type="hidden" id="p-edit-id">
   </div>
 </div>
@@ -458,7 +460,7 @@ select.form-control{appearance:none;background:url("data:image/svg+xml,%3Csvg xm
 <!-- ===== Provider Detail Modal ===== -->
 <div class="modal-overlay" id="provider-detail-modal">
   <div class="modal" style="width:560px">
-    <h3 id="pd-title">供应商详情</h3>
+    <h3 id="pd-title">模型详情</h3>
     <div id="pd-content" style="font-size:.82rem;line-height:1.7"></div>
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeProviderDetail()">关闭</button>
@@ -1030,7 +1032,7 @@ async function loadProviders() {
           </div>
         </div>`;
       }).join('')
-    : '<div class="empty"><div class="ico">🏭</div><p>暂无供应商，点击右上角添加</p></div>';
+    : '<div class="empty"><div class="ico">🏭</div><p>暂无模型供应，点击右上角添加</p></div>';
   // Refresh agent edit provider dropdown
   const sel = $('f-provider');
   if (sel) {
@@ -1061,7 +1063,7 @@ async function showProviderDetail(id) {
   const agents = await api('/providers/' + id + '/agents');
   const models = parseModels(p.models);
   const ts = stats?.tokenStats || {};
-  const agentRows = (agents || []).map(a => `<div style="padding:4px 0">🤖 ${esc(a.name || a.id)}</div>`).join('') || '<div style="color:#b2bec3">无 Agent 使用此供应商</div>';
+  const agentRows = (agents || []).map(a => `<div style="padding:4px 0">🤖 ${esc(a.name || a.id)}</div>`).join('') || '<div style="color:#b2bec3">无 Agent 使用此模型</div>';
   $('pd-title').textContent = `📊 ${esc(p.name)} 详情`;
   $('pd-content').innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
@@ -1095,7 +1097,7 @@ async function showProviderDetail(id) {
       `).join('')}
     </div>` : ''}
     <div>
-      <div style="font-weight:600;font-size:.82rem;margin-bottom:6px">🤖 使用此供应商的 Agent</div>
+      <div style="font-weight:600;font-size:.82rem;margin-bottom:6px">🤖 使用此模型的 Agent</div>
       ${agentRows}
     </div>
   `;
@@ -1108,7 +1110,7 @@ function closeProviderDetail() {
 
 function showProviderModal(data) {
   $('p-edit-id').value = data ? data.id : '';
-  $('provider-modal-title').textContent = data ? '编辑供应商' : '添加供应商';
+  $('provider-modal-title').textContent = data ? '编辑模型' : '添加模型';
   $('p-name').value = data ? data.name : '';
   $('p-type').value = data ? data.provider : 'openai';
   $('p-apikey').value = '';
@@ -1147,9 +1149,41 @@ async function editProvider(id) {
 }
 
 async function deleteProvider(id) {
-  if (!confirm('确定删除此供应商？')) return;
+  if (!confirm('确定删除此模型？')) return;
   await api('/providers/' + id, { method: 'DELETE' });
   loadProviders();
+}
+
+async function testProvider() {
+  const name = $('p-name').value.trim();
+  const providerType = $('p-type').value;
+  const apiKey = $('p-apikey').value.trim();
+  const baseUrl = $('p-baseurl').value.trim();
+  const models = parseModels($('p-models').value);
+  if (!baseUrl) return alert('请先填写接口地址');
+  if (!apiKey) return alert('请先填写 API Key');
+  const btn = $('btn-test-provider');
+  const result = $('test-result');
+  btn.textContent = '⏳ 测试中...';
+  btn.disabled = true;
+  result.style.display = 'block';
+  result.innerHTML = '⏳ 正在连接...';
+  try {
+    const r = await api('/providers/test', {
+      method: 'POST',
+      body: JSON.stringify({ name, provider: providerType, apiKey, baseUrl, models })
+    });
+    if (r && r.success) {
+      result.innerHTML = '✅ 连接成功！' + (r.model ? ` 返回模型: ${esc(r.model)}` : '');
+    } else {
+      result.innerHTML = '❌ 连接失败: ' + esc(r?.error || '未知错误');
+    }
+  } catch (e) {
+    result.innerHTML = '❌ 请求异常: ' + esc(e.message);
+  } finally {
+    btn.textContent = '▶ 测试连接';
+    btn.disabled = false;
+  }
 }
 
 // === Logs ===
