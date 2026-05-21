@@ -25,19 +25,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
 .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
 .page-header h2{font-size:1.1rem;font-weight:600;color:#2d3436}
 .page-header .sub{font-size:.75rem;color:#b2bec3;margin-top:2px}
-/* Card - Golden Ratio Layout */
-.card{background:#fff;border-radius:16px;padding:24px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.04);border:1px solid #eef0f6;transition:box-shadow .2s}
+/* Card */
+.card{background:#fff;border-radius:16px;padding:20px 24px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.04);border:1px solid #eef0f6;transition:box-shadow .2s}
 .card:hover{box-shadow:0 4px 20px rgba(0,0,0,.08)}
-.card-header{display:flex;align-items:flex-start;gap:20px;position:relative}
-.card-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0}
+.card-header{display:flex;align-items:flex-start;gap:16px}
+.card-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
 .card-info{flex:1;min-width:0}
-.card-info h3{font-size:1rem;font-weight:600;color:#2d3436;margin-bottom:4px}
-.card-info .sub{font-size:.72rem;color:#b2bec3}
-.card-controls{flex-shrink:0;display:flex;align-items:center;gap:12px;padding-left:20px;margin-left:20px;border-left:1px solid #eef0f6}
-.card-body{margin-top:20px;display:flex;gap:32px;flex-wrap:wrap;font-size:.82rem;color:#636e72;line-height:1.6}
-.card-body .detail-item{display:flex;align-items:center;gap:8px}
-.card-body .detail-item .label{font-size:.72rem;color:#b2bec3;font-weight:500;text-transform:uppercase;letter-spacing:.3px}
-.card-footer{display:flex;align-items:center;gap:24px;margin-top:20px;padding-top:16px;border-top:1px solid #f0f0f6;font-size:.75rem;color:#b2bec3}
+.card-info h3{font-size:.95rem;font-weight:600;color:#2d3436;display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card-info h3 .toggle{transform:scale(.85);transform-origin:center}
+.card-info .sub{font-size:.72rem;color:#b2bec3;margin-top:2px}
+.card-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.card-body{margin-top:16px;font-size:.82rem;color:#636e72;line-height:1.7}
+.card-body .row{display:flex;gap:24px;flex-wrap:wrap}
+.card-body .row .item{display:inline-flex;align-items:baseline;gap:8px}
+.card-body .row .item .tag{font-size:.65rem;color:#b2bec3;font-weight:500;text-transform:uppercase;letter-spacing:.3px}
+.card-footer{display:flex;align-items:center;gap:24px;margin-top:16px;padding-top:12px;border-top:1px solid #f0f0f6;font-size:.75rem;color:#b2bec3;flex-wrap:wrap}
 /* Tags */
 .tag{display:inline-block;padding:2px 10px;border-radius:10px;font-size:.68rem;font-weight:500}
 .tag.on{background:#e8f5e9;color:#2e7d32}
@@ -1025,21 +1027,24 @@ async function loadProviders() {
           <div class="card-header">
             <div class="card-icon" style="background:${p.isDefault ? 'linear-gradient(135deg,#667eea,#764ba2)' : '#f0f0f0'};color:${p.isDefault ? '#fff' : '#636e72'}">${p.provider === 'openai' ? '🤖' : p.provider === 'deepseek' ? '🧠' : '⚙️'}</div>
             <div class="card-info">
-              <h3>${esc(p.name)} ${p.isDefault ? '<span class="tag info">默认</span>' : ''}</h3>
+              <h3>${esc(p.name)} ${p.isDefault ? '<span class="tag info">默认</span>' : ''}
+                <label class="toggle" onclick="event.stopPropagation()">
+                  <input type="checkbox" ${p.enabled!==0?'checked':''} onchange="toggleProvider('${p.id}',this.checked)">
+                  <span class="slider"></span>
+                </label>
+              </h3>
               <div class="sub">${esc(p.id)} · ${esc(p.provider)}</div>
             </div>
-            <div class="card-controls">
-              <label class="toggle" onclick="event.stopPropagation()">
-                <input type="checkbox" ${p.enabled!==0?'checked':''} onchange="toggleProvider('${p.id}',this.checked)">
-                <span class="slider"></span>
-              </label>
-              <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();editProvider('${p.id}')">✎ 编辑</button>
-              <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteProvider('${p.id}')">✕ 删除</button>
+            <div class="card-actions">
+              <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();editProvider('${p.id}')">编辑</button>
+              <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteProvider('${p.id}')">删除</button>
             </div>
           </div>
           <div class="card-body">
-            <div class="detail-item"><span class="label">接口</span><span>${esc(p.baseUrl)}</span></div>
-            <div class="detail-item"><span class="label">模型</span><span>${models.join(', ') || '—'}</span></div>
+            <div class="row">
+              <span class="item"><span class="tag">接口</span> ${esc(p.baseUrl)}</span>
+              <span class="item"><span class="tag">模型</span> ${models.join(', ') || '—'}</span>
+            </div>
           </div>
           <div class="card-footer">
             <span id="p-usage-${p.id}">⏳ 加载用量...</span>
