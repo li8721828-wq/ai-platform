@@ -404,6 +404,17 @@ export function createApp(cfg: Config) {
     res.json({ ok: true });
   });
 
+  app.put('/api/providers/:id/toggle', (req, res) => {
+    try {
+      const before = providerManager.get(req.params.id);
+      const updated = providerManager.toggle(req.params.id);
+      auditLog('update', 'provider', req.params.id, before, updated);
+      res.json(updated);
+    } catch (e: any) {
+      res.status(400).json({ error: e.message });
+    }
+  });
+
   app.get('/api/providers/:id/stats', (req, res) => {
     const p = providerManager.get(req.params.id);
     if (!p) return res.status(404).json({ error: 'not found' });

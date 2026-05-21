@@ -150,9 +150,13 @@ function applySchema() {
       base_url TEXT NOT NULL DEFAULT '',
       models TEXT NOT NULL DEFAULT '[]',
       is_default INTEGER NOT NULL DEFAULT 0,
+      enabled INTEGER NOT NULL DEFAULT 1,
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
     );
+
+    -- Migrate: add enabled column for existing databases
+    try { db.exec('ALTER TABLE model_providers ADD COLUMN enabled INTEGER NOT NULL DEFAULT 1'); } catch {}
 
     CREATE TABLE IF NOT EXISTS token_usage (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

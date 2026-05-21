@@ -68,6 +68,7 @@ export interface ModelProvider {
   baseUrl: string;
   models: string;
   isDefault: number;
+  enabled: number;
   createdAt: number;
   updatedAt: number;
 }
