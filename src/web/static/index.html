@@ -64,100 +64,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
 .btn-sm{padding:4px 10px;font-size:.72rem}
 .btn + .btn{margin-left:6px}
 .btn:disabled{opacity:.5;cursor:default}
-/* Table */
-.table-wrap{background:#fff;border-radius:12px;border:1px solid #eef0f6;overflow:hidden}
-table{width:100%;border-collapse:collapse;font-size:.82rem}
-th{background:#f8f9fc;color:#636e72;font-weight:600;font-size:.72rem;text-align:left;padding:12px 16px;border-bottom:1px solid #eef0f6;text-transform:uppercase;letter-spacing:.3px}
-td{padding:12px 16px;border-bottom:1px solid #f5f6fa;color:#2d3436}
-tr:last-child td{border-bottom:none}
-/* Form */
-.form-group{margin-bottom:12px}
-.form-group label{display:block;font-size:.75rem;color:#636e72;margin-bottom:4px;font-weight:500}
-.form-control{width:100%;padding:8px 12px;border:1px solid #dfe6e9;border-radius:8px;font-size:.82rem;background:#fff;color:#2d3436;transition:border-color .15s}
-.form-control:focus{outline:none;border-color:#667eea;box-shadow:0 0 0 3px rgba(102,126,234,.1)}
-select.form-control{appearance:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23636e72' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 12px center;padding-right:32px}
-/* Status indicator */
-.status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
-.status-dot.connected{background:#27ae60;box-shadow:0 0 6px rgba(39,174,96,.4)}
-.status-dot.connecting{background:#f39c12;animation:pulse 1s infinite}
-.status-dot.disconnected{background:#b2bec3}
-.status-dot.error{background:#e74c3c}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-/* Modal */
-.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.3);z-index:200;align-items:center;justify-content:center}
-.modal-overlay.show{display:flex}
-.modal{background:#fff;border-radius:16px;padding:24px;width:480px;max-width:90vw;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.15)}
-.modal h3{font-size:1rem;font-weight:600;margin-bottom:16px}
-.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
-/* Empty state */
-.empty{text-align:center;padding:40px 20px;color:#b2bec3}
-.empty .ico{font-size:2rem;margin-bottom:8px}
-.empty p{font-size:.82rem}
-/* Misc */
-.flex{display:flex;align-items:center;gap:8px}
-.flex-1{flex:1}
-.mt-1{margin-top:4px}
-.mt-2{margin-top:8px}
-.gap-4{gap:4px}
-.truncate{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-/* Logs */
-.log-info td{background:transparent}
-.log-warn td{background:#fff8e1}
-.log-error td{background:#ffebee}
-.log-tag{font-size:.65rem;padding:2px 6px;border-radius:4px;font-weight:600}
-.log-tag-info{background:#e3f2fd;color:#1565c0}
-.log-tag-warn{background:#fff3cd;color:#856404}
-.log-tag-error{background:#f8d7da;color:#721c24}
-.log-tag-debug{background:#e8eaf6;color:#3949ab}
-.btn-group{display:flex;gap:2px}
-.btn-group .btn{border-radius:0;padding:4px 10px;font-size:.72rem}
-.btn-group .btn:first-child{border-radius:6px 0 0 6px}
-.btn-group .btn:last-child{border-radius:0 6px 6px 0}
-.btn-group .btn.active{background:#667eea;color:#fff;border-color:#667eea}
-.terminal{background:#0d1117;border-radius:10px;padding:6px 0;font-family:'Cascadia Code','Fira Code','JetBrains Mono','Consolas',monospace;font-size:.78rem;line-height:1.5;max-height:600px;overflow-y:auto}
-.terminal-empty{padding:40px;text-align:center;color:#484f58;font-family:inherit}
-.terminal .line{padding:3px 14px;white-space:pre-wrap;word-break:break-all;border-left:3px solid transparent}
-.terminal .line-error{background:#290a0d;border-left-color:#f85149;color:#f0c6c6}
-.terminal .line-warn{background:#1d1a0b;border-left-color:#d29922;color:#e3d5a8}
-.terminal .line-info{color:#e6edf3}
-.terminal .line-debug{color:#484f58}
-.terminal .line .ts{color:#484f58;font-size:.72rem}
-.terminal .line .level{display:inline-block;width:40px;font-weight:600;font-size:.7rem}
-.terminal .line-info .level{color:#3fb950}
-.terminal .line-warn .level{color:#d29922}
-.terminal .line-error .level{color:#f85149}
-.terminal .line-debug .level{color:#484f58}
-.terminal .line .comp{display:inline-block;width:100px;color:#58a6ff;font-size:.72rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
-.terminal .line .msg{color:inherit}
-.terminal .line .meta-inline{color:#8b949e;font-size:.7rem}
-.terminal .line-error .meta-inline{color:#e6b3b3}
-.terminal .line-warn .meta-inline{color:#d4c599}
-.terminal .line .elapsed{color:#484f58;font-size:.7rem;margin-left:8px}
-.terminal .line .trace-tag{display:inline-block;padding:1px 5px;border-radius:3px;font-size:.65rem;background:#1c2333;color:#58a6ff;font-family:monospace;margin-left:4px;vertical-align:middle}
-.terminal .line .msg .meta{margin:4px 0 2px 0;padding:6px 8px;background:#161b22;border-radius:4px;color:#8b949e;font-size:.72rem;white-space:pre;overflow-x:auto;display:block;line-height:1.4}
-@media(max-width:768px){.layout{flex-direction:column;padding:16px}.sidebar{width:100%;display:flex;gap:4px;overflow-x:auto;padding-bottom:8px}.sidebar .nav-item{white-space:nowrap;flex-shrink:0;margin-bottom:0}.header{padding:0 16px}}
-/* Login */
-.login-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;z-index:999}
-.login-box{background:#fff;border-radius:16px;padding:40px;width:360px;box-shadow:0 20px 60px rgba(0,0,0,.2);text-align:center}
-.login-box h2{font-size:1.2rem;margin-bottom:4px;color:#2d3436}
-.login-box p{font-size:.78rem;color:#b2bec3;margin-bottom:20px}
-.login-box .form-control{text-align:center;font-size:1rem;padding:12px;margin-bottom:12px}
-.login-box .btn{width:100%;padding:12px;font-size:.9rem;justify-content:center}
-.login-error{color:#e74c3c;font-size:.75rem;margin-top:8px;display:none}
 </style>
 </head>
 <body>
-
-<!-- Login -->
-<div class="login-overlay" id="login-screen">
-  <div class="login-box">
-    <h2>✦ AI Platform</h2>
-    <p>输入管理员密码进入管理后台</p>
-    <input class="form-control" type="password" id="login-pwd" placeholder="密码" onkeydown="if(event.key==='Enter')doLogin()">
-    <button class="btn btn-primary" onclick="doLogin()">进入后台</button>
-    <div class="login-error" id="login-error">密码错误</div>
-  </div>
-</div>
 
 <div class="header">
   <div style="display:flex;align-items:center;gap:12px">
@@ -173,7 +82,7 @@ select.form-control{appearance:none;background:url("data:image/svg+xml,%3Csvg xm
   </div>
 </div>
 
-<div class="layout" style="display:none">
+<div class="layout">
   <div class="sidebar" id="sidebar">
     <div class="nav-item active" data-tab="chat"><span class="ico">💭</span> 在线对话</div>
     <div class="nav-item" data-tab="agents"><span class="ico">🤖</span> Agent 管理</div>
@@ -484,22 +393,15 @@ select.form-control{appearance:none;background:url("data:image/svg+xml,%3Csvg xm
 
 <script>
 const BASE = '/api';
+let AUTH_TOKEN = '';
 let state = { agents: [], channels: [], traces: [], sessions: [], kb: { docs: [], chunks: [] }, tools: [], providers: [] };
-let AUTH_TOKEN = localStorage.getItem('auth_token') || '';
 
 function $(id) { return document.getElementById(id); }
 
 async function api(path, opts) {
   const headers = { 'Content-Type': 'application/json' };
-  if (AUTH_TOKEN) headers['x-auth-token'] = AUTH_TOKEN;
   const res = await fetch(BASE + path, { headers, ...(opts || {}) });
-  if (res.status === 401 && !path.startsWith('/auth/')) {
-    AUTH_TOKEN = '';
-    localStorage.removeItem('auth_token');
-    showLogin();
-    return null;
-  }
-  if (!res.ok && res.status !== 401) {
+  if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     console.error('API 错误:', path, res.status, body);
     return { error: body.error || `请求失败 (${res.status})` };
@@ -516,40 +418,10 @@ function parseModels(v) {
   return [];
 }
 
-// === Auth ===
-async function doLogin() {
-  const pwd = $('login-pwd').value;
-  try {
-    const r = await api('/auth/login', { method: 'POST', body: JSON.stringify({ password: pwd }) });
-    if (r && r.ok) {
-      AUTH_TOKEN = r.token;
-      localStorage.setItem('auth_token', r.token);
-      $('login-screen').style.display = 'none';
-      document.querySelector('.layout').style.display = 'flex';
-      initAll();
-    } else {
-      $('login-error').style.display = 'block';
-    }
-  } catch (e) {
-    console.error('登录请求失败:', e);
-    $('login-error').textContent = '连接失败: ' + (e.message || '未知错误');
-    $('login-error').style.display = 'block';
-  }
-}
-
-function doLogout() {
-  api('/auth/logout', { method: 'POST' });
-  AUTH_TOKEN = '';
-  localStorage.removeItem('auth_token');
-  showLogin();
-}
-
-function showLogin() {
-  $('login-screen').style.display = 'flex';
-  document.querySelector('.layout').style.display = 'none';
-  $('login-pwd').value = '';
-  $('login-error').style.display = 'none';
-}
+// === Auth (disabled) ===
+async function doLogin() {}
+function doLogout() {}
+function showLogin() {}
 
 // === Chat ===
 let chatHistory = [];
@@ -559,7 +431,7 @@ let ws = null;
 function connectWs() {
   if (ws) return;
   try {
-    ws = new WebSocket(`${WS_URL}?token=${encodeURIComponent(AUTH_TOKEN)}`);
+    ws = new WebSocket(WS_URL);
     ws.onmessage = (e) => {
       try {
         const msg = JSON.parse(e.data);
@@ -675,7 +547,6 @@ async function checkAuth() {
   AUTH_TOKEN = '';
   localStorage.removeItem('auth_token');
   showLogin();
-  return false;
 }
 
 // === Sidebar ===
@@ -1395,7 +1266,7 @@ function initAll() {
   setInterval(() => loadProviders(), 30000);
   logTimer = setInterval(() => loadLogs(), 5000);
 }
-checkAuth();
+initAll();
 </script>
 </body>
 </html>
