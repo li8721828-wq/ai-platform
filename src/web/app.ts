@@ -419,6 +419,10 @@ export function createApp(cfg: Config) {
 
   // ===== Health =====
   app.get('/api/health', (_req, res) => res.json({ ok: true, uptime: process.uptime(), ts: Date.now() }));
+  app.get('/api/version', (_req, res) => {
+    const pkg = JSON.parse(fs.readFileSync(path.resolve('package.json'), 'utf-8'));
+    res.json({ version: pkg.version, name: pkg.name });
+  });
 
   // ===== Logs =====
   app.get('/api/logs', (req, res) => {

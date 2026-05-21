@@ -103,8 +103,8 @@ select.form-control{appearance:none;background:url("data:image/svg+xml,%3Csvg xm
 .terminal{background:#0d1117;border-radius:10px;padding:6px 0;font-family:'Cascadia Code','Fira Code','JetBrains Mono','Consolas',monospace;font-size:.78rem;line-height:1.5;max-height:600px;overflow-y:auto}
 .terminal-empty{padding:40px;text-align:center;color:#484f58;font-family:inherit}
 .terminal .line{padding:3px 14px;white-space:pre-wrap;word-break:break-all;border-left:3px solid transparent}
-.terminal .line-error{background:#290a0d;border-left-color:#f85149}
-.terminal .line-warn{background:#1d1a0b;border-left-color:#d29922}
+.terminal .line-error{background:#290a0d;border-left-color:#f85149;color:#f0c6c6}
+.terminal .line-warn{background:#1d1a0b;border-left-color:#d29922;color:#e3d5a8}
 .terminal .line-info{color:#e6edf3}
 .terminal .line-debug{color:#484f58}
 .terminal .line .ts{color:#484f58;font-size:.72rem}
@@ -116,6 +116,8 @@ select.form-control{appearance:none;background:url("data:image/svg+xml,%3Csvg xm
 .terminal .line .comp{display:inline-block;width:100px;color:#58a6ff;font-size:.72rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
 .terminal .line .msg{color:inherit}
 .terminal .line .meta-inline{color:#8b949e;font-size:.7rem}
+.terminal .line-error .meta-inline{color:#e6b3b3}
+.terminal .line-warn .meta-inline{color:#d4c599}
 .terminal .line .elapsed{color:#484f58;font-size:.7rem;margin-left:8px}
 .terminal .line .trace-tag{display:inline-block;padding:1px 5px;border-radius:3px;font-size:.65rem;background:#1c2333;color:#58a6ff;font-family:monospace;margin-left:4px;vertical-align:middle}
 .terminal .line .msg .meta{margin:4px 0 2px 0;padding:6px 8px;background:#161b22;border-radius:4px;color:#8b949e;font-size:.72rem;white-space:pre;overflow-x:auto;display:block;line-height:1.4}
@@ -146,7 +148,7 @@ select.form-control{appearance:none;background:url("data:image/svg+xml,%3Csvg xm
 <div class="header">
   <div style="display:flex;align-items:center;gap:12px">
     <h1>✦ AI Platform</h1>
-    <span class="badge">v1.0</span>
+    <span class="badge" id="version-badge">v...</span>
   </div>
   <div style="display:flex;align-items:center;gap:16px;font-size:.8rem;opacity:.8">
     <span id="header-status">● 运行中</span>
@@ -1321,6 +1323,8 @@ function toggleLogAutoRefresh() {
 
 // === Init ===
 function initAll() {
+  // 获取版本号
+  api('/version').then(r => { if (r?.version) $('version-badge').textContent = 'v' + r.version; });
   connectWs();
   loadAgents(); loadChannels(); loadKB(); loadTools(); loadMessages(); loadMsgUsers(); loadTraces(); loadSessions(); loadLlmSettings(); loadProviders(); loadLogs();
   setInterval(() => { loadTraces(); loadSessions(); loadChannels(); loadKB(); }, 5000);

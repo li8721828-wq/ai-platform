@@ -12,11 +12,16 @@ import { createApp } from './web/app.js';
 import { wsBus } from './ws-bus.js';
 import { eventBus } from './event-bus.js';
 import { logger } from './logger.js';
+import pkg from '../package.json' with { type: 'json' };
 
 const CYAN = '\x1b[36m';
 const GREEN = '\x1b[32m';
 const YELLOW = '\x1b[33m';
+const RED = '\x1b[31m';
+const GRAY = '\x1b[90m';
 const RESET = '\x1b[0m';
+
+const VERSION = pkg.version;
 
 const banner = `
   ${CYAN}  ██████╗  ██████╗  ██████╗ ███████╗${RESET}
@@ -25,7 +30,8 @@ const banner = `
   ${CYAN}   ╚═══██╗████╔╝██║████╔╝██║██╔══╝${RESET}
   ${CYAN}  ██████╔╝╚██████╔╝╚██████╔╝███████╗${RESET}
   ${CYAN}  ╚═════╝  ╚═════╝  ╚═════╝ ╚══════╝${RESET}
-  ${YELLOW}  :: AI Platform :: v1.1.1${RESET}
+  ${YELLOW}  :: AI Platform :: v${VERSION}${RESET}
+  ${GRAY}  Build: ${new Date().toISOString().slice(0, 10)}${RESET}
 `;
 
 async function main() {
