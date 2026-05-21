@@ -18,6 +18,7 @@ export async function initDb(cfg: Config): Promise<SqlJsDatabase> {
   db.run('PRAGMA journal_mode = WAL');
   db.run('PRAGMA foreign_keys = ON');
   applySchema();
+  migrate();
   saveDb();
   return db;
 }
@@ -155,9 +156,6 @@ function applySchema() {
       updated_at INTEGER NOT NULL
     );
 
-    -- Migrate: add enabled column for existing databases
-    try { db.exec('ALTER TABLE model_providers ADD COLUMN enabled INTEGER NOT NULL DEFAULT 1'); } catch {}
-
     CREATE TABLE IF NOT EXISTS token_usage (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       provider_id TEXT NOT NULL,
@@ -218,4 +216,11 @@ export function runStmt(sql: string, params: any[] = []): void {
     db.run(sql);
   }
   scheduleSave();
+}
+
+function migrate() {
+  const cols: { name: string }[] = db.exec("PRAGMA table_info('model_providers')")[0]?.values.map(v => ({ name: v[1] as string })) || [];
+  if (!cols.some(c => c.name === 'enabled')) {
+    db.run('ALTER TABLE model_providers ADD COLUMN enabled INTEGER NOT NULL DEFAULT 1');
+  }
 }
