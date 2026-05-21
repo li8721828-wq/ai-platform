@@ -41,7 +41,60 @@ export function createApp(cfg: Config) {
     next();
   });
 
-  // ===== Auth (disabled) =====
+  // ===== Auth =====
+  // Always-accessible endpoint for frontend to check auth status
+  app.get('/api/auth/status', (_req, res) => {
+    res.json({ enabled: !!cfg.admin?.password });
+  });
+
+  if (cfg.admin?.password) {
+    const adminPasswordHash = crypto.createHash('sha256').update(cfg.admin.password).digest('hex');
+    let authToken: string | null = null;
+    let tokenExpires = 0;
+    const TOKEN_HEADER = 'x-auth-token';
+    const TOKEN_TTL = 24 * 60 * 60 * 1000;
+
+    function generateToken(): string {
+      return crypto.randomBytes(32).toString('hex');
+    }
+
+    function authMiddleware(req: any, res: any, next: any) {
+      if (req.path === '/api/auth/login') return next();
+      if (req.path === '/api/health') return next();
+      if (req.path.startsWith('/api/')) {
+        const token = req.headers[TOKEN_HEADER];
+        if (token === authToken && Date.now() < tokenExpires) return next();
+        return res.status(401).json({ error: '未登录，请先登录' });
+      }
+      next();
+    }
+    app.use(authMiddleware);
+
+    app.post('/api/auth/login', (req, res) => {
+      const { password } = req.body;
+      const inputHash = crypto.createHash('sha256').update(password || '').digest('hex');
+      if (inputHash === adminPasswordHash) {
+        authToken = generateToken();
+        tokenExpires = Date.now() + TOKEN_TTL;
+        wsBus.setAuthToken(authToken!);
+        return res.json({ ok: true, token: authToken, expires: tokenExpires });
+      }
+      res.status(403).json({ error: '密码错误' });
+    });
+
+    app.post('/api/auth/logout', (_req, res) => {
+      authToken = null;
+      tokenExpires = 0;
+      wsBus.setAuthToken(null);
+      res.json({ ok: true });
+    });
+
+    app.get('/api/auth/check', (_req, res) => {
+      res.json({ ok: !!authToken });
+    });
+  } else {
+    logger.info('[Auth] 未配置密码，登录功能已关闭');
+  }
 
   // ===== Agents =====
   app.get('/api/agents', (_req, res) => res.json(agentStore.listAll()));
