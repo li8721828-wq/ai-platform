@@ -62,7 +62,7 @@ web:
   port: 3000
 
 admin:
-  password: admin123
+  # password: admin123  # 注释掉即关闭登录
 
 providers:
   - id: deepseek

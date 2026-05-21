@@ -219,8 +219,14 @@ export function runStmt(sql: string, params: any[] = []): void {
 }
 
 function migrate() {
-  const cols: { name: string }[] = db.exec("PRAGMA table_info('model_providers')")[0]?.values.map(v => ({ name: v[1] as string })) || [];
-  if (!cols.some(c => c.name === 'enabled')) {
+  // model_providers: add enabled column
+  const mpCols: { name: string }[] = db.exec("PRAGMA table_info('model_providers')")[0]?.values.map(v => ({ name: v[1] as string })) || [];
+  if (!mpCols.some(c => c.name === 'enabled')) {
     db.run('ALTER TABLE model_providers ADD COLUMN enabled INTEGER NOT NULL DEFAULT 1');
+  }
+  // agents: add provider column (old DBs may not have it)
+  const agCols: { name: string }[] = db.exec("PRAGMA table_info('agents')")[0]?.values.map(v => ({ name: v[1] as string })) || [];
+  if (!agCols.some(c => c.name === 'provider')) {
+    db.run("ALTER TABLE agents ADD COLUMN provider TEXT");
   }
 }
