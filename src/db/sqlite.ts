@@ -191,31 +191,24 @@ export function queryOne(sql: string, params: any[] = []): any | undefined {
   return rows[0];
 }
 
-let saveTimeout: any = null;
-
-function scheduleSave() {
-  if (saveTimeout) return;
-  saveTimeout = setTimeout(() => {
-    saveTimeout = null;
-    saveDb();
-  }, 200);
-}
-
-export function flushDb() {
-  if (saveTimeout) { clearTimeout(saveTimeout); saveTimeout = null; saveDb(); }
-}
-
 // Helper: run a statement
 export function runStmt(sql: string, params: any[] = []): void {
   if (params.length) {
     const stmt = db.prepare(sql);
-    stmt.bind(params);
-    stmt.step();
-    stmt.free();
+    try {
+      stmt.bind(params);
+      stmt.step();
+    } finally {
+      stmt.free();
+    }
   } else {
     db.run(sql);
   }
-  scheduleSave();
+  saveDb();
+}
+
+export function flushDb() {
+  saveDb();
 }
 
 function migrate() {

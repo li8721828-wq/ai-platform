@@ -31,7 +31,7 @@ export class KnowledgeManager {
       added += chunks.length;
     }
     if (added) logger.info(`[Knowledge] New files added`, { files: files.length, chunks: added });
-    this.computeEmbeddings();
+    await this.computeEmbeddings();
   }
 
   private async computeEmbeddings() {

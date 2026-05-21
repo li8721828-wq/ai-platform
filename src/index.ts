@@ -45,9 +45,7 @@ async function main() {
   await initDb(config);
   seedProviders(config);
 
-  const agents = agentManager.getAllAgents();
   logger.info('[Database] Providers seeded');
-  logger.info('[AgentManager] Agent manager initialized', { count: agents.length });
 
   await agentManager.init(config);
   await syncConfigAgentsToDb(config);

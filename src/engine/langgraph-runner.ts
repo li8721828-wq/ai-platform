@@ -66,11 +66,9 @@ export class LangGraphRunner {
               callbacks.onToken!(delta);
             }
           }
-          if (fullContent) {
-            callbacks.onFinish?.(fullContent);
-            logger.info(`[LangGraph] Streaming complete`, { agent: agent.id, replyLen: fullContent.length });
-            return fullContent;
-          }
+          callbacks?.onFinish?.(fullContent);
+          logger.info(`[LangGraph] Streaming complete`, { agent: agent.id, replyLen: fullContent.length });
+          return fullContent;
         }
 
         const bound = tools.length ? (model as any).bindTools(tools) : model;
@@ -85,6 +83,7 @@ export class LangGraphRunner {
         }
 
         logger.info(`[LangGraph] Tool calls`, { agent: agent.id, turn: i + 1, toolCalls: response.tool_calls.map((tc: any) => tc.name) });
+        messages.push(new AIMessage({ content: '', tool_calls: response.tool_calls }));
         for (const tc of response.tool_calls) {
           const tool = tools.find(t => t.name === tc.name);
           if (!tool) continue;
@@ -99,7 +98,6 @@ export class LangGraphRunner {
             logger.error(`[LangGraph] Tool execution failed`, { tool: tc.name, args: tc.args, error: err.message, stack: err.stack });
           }
           callbacks?.onToolResult?.(tc.name, result);
-          messages.push(new AIMessage({ content: '', tool_calls: [tc] }));
           messages.push(new ToolMessage({ content: result, tool_call_id: tc.id || tc.name }));
         }
       }

@@ -1,6 +1,7 @@
 import { WebSocket } from 'ws';
 import { mcpRegistry } from './registry.js';
 import { logger } from '../logger.js';
+import { genId } from '../utils.js';
 
 interface MCPClient {
   name: string;
@@ -10,6 +11,25 @@ interface MCPClient {
 
 class MCPServerManager {
   private clients: MCPClient[] = [];
+  private pendingRequests = new Map<string, { resolve: (v: string) => void; timer: NodeJS.Timeout }>();
+
+  private setupMessageHandler(client: MCPClient) {
+    client.ws.on('message', (data: Buffer) => {
+      try {
+        const msg = JSON.parse(data.toString());
+        if (msg.type === 'tool_result' && msg.req_id) {
+          const pending = this.pendingRequests.get(msg.req_id);
+          if (pending) {
+            clearTimeout(pending.timer);
+            this.pendingRequests.delete(msg.req_id);
+            pending.resolve(msg.result || '');
+            return;
+          }
+        }
+        this.handleMessage(msg, client);
+      } catch { /* ignore malformed messages */ }
+    });
+  }
 
   async connect(url: string, name?: string): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -18,14 +38,9 @@ class MCPServerManager {
         ws.on('open', () => {
           const client: MCPClient = { name: name || url, ws, tools: [] };
           this.clients.push(client);
+          this.setupMessageHandler(client);
           logger.info('[MCP] Connected', { name: client.name });
           resolve();
-        });
-        ws.on('message', (data: Buffer) => {
-          try {
-            const msg = JSON.parse(data.toString());
-            this.handleMessage(msg);
-          } catch { /* ignore malformed messages */ }
         });
         ws.on('close', () => {
           logger.info('[MCP] Disconnected', { name: name || url });
@@ -41,31 +56,25 @@ class MCPServerManager {
     });
   }
 
-  private handleMessage(msg: any) {
+  private handleMessage(msg: any, client: MCPClient) {
     if (msg.type === 'tool_list') {
-      const clients = this.clients;
       for (const tool of msg.tools || []) {
         mcpRegistry.register({
           name: tool.name,
           description: tool.description || '',
           parameters: tool.parameters || {},
-          async execute(args: any) {
-            const payload = JSON.stringify({ type: 'tool_call', name: tool.name, args });
-            const client = clients.find(c => c.ws.readyState === 1);
-            if (!client) return 'MCP 服务器不可用';
-            return new Promise((resolve) => {
-              const handler = (data: Buffer) => {
-                try {
-                  const resp = JSON.parse(data.toString());
-                  if (resp.type === 'tool_result' && resp.name === tool.name) {
-                    client.ws.off('message', handler);
-                    resolve(resp.result || '');
-                  }
-                } catch { /* ignore */ }
-              };
-              client.ws.on('message', handler);
-              client.ws.send(payload);
-              setTimeout(() => { client.ws.off('message', handler); resolve('MCP 工具调用超时'); }, 30000);
+          execute: async (args: any) => {
+            const reqId = genId('mcp_req_');
+            return new Promise<string>((resolve) => {
+              if (client.ws.readyState !== 1) {
+                return resolve('MCP 服务器不可用');
+              }
+              const timer = setTimeout(() => {
+                this.pendingRequests.delete(reqId);
+                resolve('MCP 工具调用超时');
+              }, 30000);
+              this.pendingRequests.set(reqId, { resolve, timer });
+              client.ws.send(JSON.stringify({ type: 'tool_call', req_id: reqId, name: tool.name, args }));
             });
           },
         });

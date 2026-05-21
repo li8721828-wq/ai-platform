@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AI 平台管理后台</title>
+<title>AI 骞冲彴绠＄悊鍚庡彴</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:#f5f6fa;color:#2d3436;padding:0;min-height:100vh}
@@ -79,57 +79,57 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
 <!-- Login -->
 <div class="login-overlay" id="login-screen">
   <div class="login-box">
-    <h2>✦ AI Platform</h2>
-    <p>输入管理员密码进入管理后台</p>
-    <input class="form-control" type="password" id="login-pwd" placeholder="密码" onkeydown="if(event.key==='Enter')doLogin()">
-    <button class="btn btn-primary" onclick="doLogin()">进入后台</button>
-    <div class="login-error" id="login-error">密码错误</div>
+    <h2>鉁?AI Platform</h2>
+    <p>杈撳叆绠＄悊鍛樺瘑鐮佽繘鍏ョ鐞嗗悗鍙?/p>
+    <input class="form-control" type="password" id="login-pwd" placeholder="瀵嗙爜" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn btn-primary" onclick="doLogin()">杩涘叆鍚庡彴</button>
+    <div class="login-error" id="login-error">瀵嗙爜閿欒</div>
   </div>
 </div>
 
 <div class="header">
   <div style="display:flex;align-items:center;gap:12px">
-    <h1>✦ AI Platform</h1>
+    <h1>鉁?AI Platform</h1>
     <span class="badge" id="version-badge">v...</span>
   </div>
   <div style="display:flex;align-items:center;gap:16px;font-size:.8rem;opacity:.8">
-    <span id="header-status">● 运行中</span>
-    <a style="color:rgba(255,255,255,.7);cursor:pointer;font-size:.72rem" onclick="exportData()">导出</a>
-    <a style="color:rgba(255,255,255,.7);cursor:pointer;font-size:.72rem" onclick="document.getElementById('import-file').click()">导入</a>
+    <span id="header-status">鈼?杩愯涓?/span>
+    <a style="color:rgba(255,255,255,.7);cursor:pointer;font-size:.72rem" onclick="exportData()">瀵煎嚭</a>
+    <a style="color:rgba(255,255,255,.7);cursor:pointer;font-size:.72rem" onclick="document.getElementById('import-file').click()">瀵煎叆</a>
     <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
-    <a style="color:rgba(255,255,255,.7);cursor:pointer;font-size:.72rem" onclick="doLogout()">退出</a>
+    <a style="color:rgba(255,255,255,.7);cursor:pointer;font-size:.72rem" onclick="doLogout()">閫€鍑?/a>
   </div>
 </div>
 
 <div class="layout" style="display:none">
   <div class="sidebar" id="sidebar">
-    <div class="nav-item active" data-tab="chat"><span class="ico">💭</span> 在线对话</div>
-    <div class="nav-item" data-tab="agents"><span class="ico">🤖</span> Agent 管理</div>
-    <div class="nav-item" data-tab="channels"><span class="ico">📡</span> 通道管理</div>
-    <div class="nav-item" data-tab="kb"><span class="ico">📚</span> 知识库</div>
-    <div class="nav-item" data-tab="tools"><span class="ico">🔧</span> 工具管理</div>
-    <div class="nav-item" data-tab="messages"><span class="ico">✉️</span> 消息记录</div>
-    <div class="nav-item" data-tab="traces"><span class="ico">📋</span> 追踪日志</div>
-    <div class="nav-item" data-tab="logs"><span class="ico">📝</span> 运行日志</div>
-    <div class="nav-item" data-tab="sessions"><span class="ico">💬</span> 会话管理</div>
-    <div class="nav-item" data-tab="providers"><span class="ico">🏭</span> 模型供应</div>
-    <div class="nav-item" data-tab="settings"><span class="ico">⚙️</span> 系统设置</div>
+    <div class="nav-item active" data-tab="chat"><span class="ico">馃挱</span> 鍦ㄧ嚎瀵硅瘽</div>
+    <div class="nav-item" data-tab="agents"><span class="ico">馃</span> Agent 绠＄悊</div>
+    <div class="nav-item" data-tab="channels"><span class="ico">馃摗</span> 閫氶亾绠＄悊</div>
+    <div class="nav-item" data-tab="kb"><span class="ico">馃摎</span> 鐭ヨ瘑搴?/div>
+    <div class="nav-item" data-tab="tools"><span class="ico">馃敡</span> 宸ュ叿绠＄悊</div>
+    <div class="nav-item" data-tab="messages"><span class="ico">鉁夛笍</span> 娑堟伅璁板綍</div>
+    <div class="nav-item" data-tab="traces"><span class="ico">馃搵</span> 杩借釜鏃ュ織</div>
+    <div class="nav-item" data-tab="logs"><span class="ico">馃摑</span> 杩愯鏃ュ織</div>
+    <div class="nav-item" data-tab="sessions"><span class="ico">馃挰</span> 浼氳瘽绠＄悊</div>
+    <div class="nav-item" data-tab="providers"><span class="ico">馃彮</span> 妯″瀷渚涘簲</div>
+    <div class="nav-item" data-tab="settings"><span class="ico">鈿欙笍</span> 绯荤粺璁剧疆</div>
   </div>
 
   <div class="main">
     <!-- ===== Chat ===== -->
     <div class="panel active" id="panel-chat">
       <div class="page-header">
-        <div><h2>在线对话</h2><div class="sub">直接在浏览器中与 Agent 对话</div></div>
-        <div><button class="btn btn-outline btn-sm" onclick="clearChat()">清空</button></div>
+        <div><h2>鍦ㄧ嚎瀵硅瘽</h2><div class="sub">鐩存帴鍦ㄦ祻瑙堝櫒涓笌 Agent 瀵硅瘽</div></div>
+        <div><button class="btn btn-outline btn-sm" onclick="clearChat()">娓呯┖</button></div>
       </div>
       <div class="card" style="padding:0;display:flex;flex-direction:column;height:500px">
         <div id="chat-messages" style="flex:1;overflow-y:auto;padding:16px;font-size:.82rem">
-          <div style="color:#b2bec3;text-align:center;padding:40px 0">发送消息开始对话</div>
+          <div style="color:#b2bec3;text-align:center;padding:40px 0">鍙戦€佹秷鎭紑濮嬪璇?/div>
         </div>
         <div style="border-top:1px solid #eef0f6;padding:12px 16px;display:flex;gap:8px">
-          <input class="form-control" id="chat-input" placeholder="输入消息..." style="flex:1" onkeydown="if(event.key==='Enter')sendChat()">
-          <button class="btn btn-primary" onclick="sendChat()">发送</button>
+          <input class="form-control" id="chat-input" placeholder="杈撳叆娑堟伅..." style="flex:1" onkeydown="if(event.key==='Enter')sendChat()">
+          <button class="btn btn-primary" onclick="sendChat()">鍙戦€?/button>
         </div>
       </div>
     </div>
@@ -137,8 +137,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
     <!-- ===== Agents ===== -->
     <div class="panel" id="panel-agents">
       <div class="page-header">
-        <div><h2>Agent</h2><div class="sub">管理所有 AI 角色的配置与状态</div></div>
-        <button class="btn btn-primary" onclick="showCreateModal()">＋ 新建 Agent</button>
+        <div><h2>Agent</h2><div class="sub">绠＄悊鎵€鏈?AI 瑙掕壊鐨勯厤缃笌鐘舵€?/div></div>
+        <button class="btn btn-primary" onclick="showCreateModal()">锛?鏂板缓 Agent</button>
       </div>
       <div id="agent-list"></div>
     </div>
@@ -146,7 +146,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
     <!-- ===== Channels ===== -->
     <div class="panel" id="panel-channels">
       <div class="page-header">
-        <div><h2>消息通道</h2><div class="sub">管理消息接入通道的配置与连接</div></div>
+        <div><h2>娑堟伅閫氶亾</h2><div class="sub">绠＄悊娑堟伅鎺ュ叆閫氶亾鐨勯厤缃笌杩炴帴</div></div>
       </div>
       <div id="channel-list"></div>
     </div>
@@ -154,23 +154,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
     <!-- ===== Knowledge Base ===== -->
     <div class="panel" id="panel-kb">
       <div class="page-header">
-        <div><h2>知识库</h2><div class="sub">文档管理与向量检索</div></div>
-        <div><button class="btn btn-outline btn-sm" onclick="reindexKB()">重新索引</button></div>
+        <div><h2>鐭ヨ瘑搴?/h2><div class="sub">鏂囨。绠＄悊涓庡悜閲忔绱?/div></div>
+        <div><button class="btn btn-outline btn-sm" onclick="reindexKB()">閲嶆柊绱㈠紩</button></div>
       </div>
       <div class="card" style="padding:14px 18px">
-        <div style="font-size:.82rem;font-weight:600;margin-bottom:8px">📄 文档列表 <span style="font-weight:400;font-size:.72rem;color:#b2bec3">— 上传 .txt/.md 文件或在线新建</span></div>
+        <div style="font-size:.82rem;font-weight:600;margin-bottom:8px">馃搫 鏂囨。鍒楄〃 <span style="font-weight:400;font-size:.72rem;color:#b2bec3">鈥?涓婁紶 .txt/.md 鏂囦欢鎴栧湪绾挎柊寤?/span></div>
         <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
           <input type="file" id="kb-filepicker" accept=".txt,.md" style="display:none" onchange="uploadKBFile(event)">
-          <button class="btn btn-primary btn-sm" onclick="$('kb-filepicker').click()">📁 上传文件</button>
-          <input class="form-control" id="kb-filename" placeholder="文件名" style="width:140px">
-          <button class="btn btn-outline btn-sm" onclick="showNewKBDoc()">＋ 新建</button>
+          <button class="btn btn-primary btn-sm" onclick="$('kb-filepicker').click()">馃搧 涓婁紶鏂囦欢</button>
+          <input class="form-control" id="kb-filename" placeholder="鏂囦欢鍚? style="width:140px">
+          <button class="btn btn-outline btn-sm" onclick="showNewKBDoc()">锛?鏂板缓</button>
         </div>
-        <div id="kb-docs" style="font-size:.78rem;color:#636e72">加载中...</div>
+        <div id="kb-docs" style="font-size:.78rem;color:#636e72">鍔犺浇涓?..</div>
       </div>
       <div class="card" style="padding:14px 18px">
-        <div style="font-size:.82rem;font-weight:600;margin-bottom:8px">🧩 文本分块 <span id="chunk-count" style="font-weight:400;font-size:.72rem;color:#b2bec3"></span></div>
+        <div style="font-size:.82rem;font-weight:600;margin-bottom:8px">馃З 鏂囨湰鍒嗗潡 <span id="chunk-count" style="font-weight:400;font-size:.72rem;color:#b2bec3"></span></div>
         <div class="table-wrap">
-          <table><thead><tr><th>ID</th><th>文件</th><th>序号</th><th>长度</th><th>时间</th><th>操作</th></tr></thead><tbody id="kb-chunks"></tbody></table>
+          <table><thead><tr><th>ID</th><th>鏂囦欢</th><th>搴忓彿</th><th>闀垮害</th><th>鏃堕棿</th><th>鎿嶄綔</th></tr></thead><tbody id="kb-chunks"></tbody></table>
         </div>
       </div>
     </div>
@@ -178,12 +178,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
     <!-- ===== Tools / MCP ===== -->
     <div class="panel" id="panel-tools">
       <div class="page-header">
-        <div><h2>工具管理</h2><div class="sub">MCP 工具注册表与外部服务器</div></div>
-        <div><button class="btn btn-outline btn-sm" onclick="connectExternalMCP()">＋ 连接外部 MCP</button>
-        <button class="btn btn-danger btn-sm" onclick="disconnectExternalMCP()">断开全部</button></div>
+        <div><h2>宸ュ叿绠＄悊</h2><div class="sub">MCP 宸ュ叿娉ㄥ唽琛ㄤ笌澶栭儴鏈嶅姟鍣?/div></div>
+        <div><button class="btn btn-outline btn-sm" onclick="connectExternalMCP()">锛?杩炴帴澶栭儴 MCP</button>
+        <button class="btn btn-danger btn-sm" onclick="disconnectExternalMCP()">鏂紑鍏ㄩ儴</button></div>
       </div>
       <div class="card" style="padding:14px 18px">
-        <div style="font-size:.82rem;font-weight:600;margin-bottom:8px">🔧 已注册工具</div>
+        <div style="font-size:.82rem;font-weight:600;margin-bottom:8px">馃敡 宸叉敞鍐屽伐鍏?/div>
         <div id="tool-list"></div>
       </div>
     </div>
@@ -191,16 +191,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
     <!-- ===== Messages ===== -->
     <div class="panel" id="panel-messages">
       <div class="page-header">
-        <div><h2>消息记录</h2><div class="sub">查看所有用户的对话历史</div></div>
+        <div><h2>娑堟伅璁板綍</h2><div class="sub">鏌ョ湅鎵€鏈夌敤鎴风殑瀵硅瘽鍘嗗彶</div></div>
         <div>
           <select class="form-control" style="width:auto;display:inline-block;padding:4px 28px 4px 8px;font-size:.72rem" id="msg-user-filter" onchange="loadMessages()">
-            <option value="">全部用户</option>
+            <option value="">鍏ㄩ儴鐢ㄦ埛</option>
           </select>
         </div>
       </div>
       <div class="table-wrap">
         <table><thead><tr>
-          <th>时间</th><th>用户</th><th>角色</th><th>内容</th>
+          <th>鏃堕棿</th><th>鐢ㄦ埛</th><th>瑙掕壊</th><th>鍐呭</th>
         </tr></thead><tbody id="message-list"></tbody></table>
       </div>
     </div>
@@ -208,11 +208,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
     <!-- ===== Traces ===== -->
     <div class="panel" id="panel-traces">
       <div class="page-header">
-        <div><h2>追踪日志</h2><div class="sub">AI 请求的调用链路追踪</div></div>
+        <div><h2>杩借釜鏃ュ織</h2><div class="sub">AI 璇锋眰鐨勮皟鐢ㄩ摼璺拷韪?/div></div>
       </div>
       <div class="table-wrap">
         <table><thead><tr>
-          <th>操作名称</th><th>Trace ID</th><th>状态</th><th>耗时</th><th>时间</th>
+          <th>鎿嶄綔鍚嶇О</th><th>Trace ID</th><th>鐘舵€?/th><th>鑰楁椂</th><th>鏃堕棿</th>
         </tr></thead><tbody id="trace-list"></tbody></table>
       </div>
     </div>
@@ -220,11 +220,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
     <!-- ===== Sessions ===== -->
     <div class="panel" id="panel-sessions">
       <div class="page-header">
-        <div><h2>会话管理</h2><div class="sub">查看和切换用户的活跃会话</div></div>
+        <div><h2>浼氳瘽绠＄悊</h2><div class="sub">鏌ョ湅鍜屽垏鎹㈢敤鎴风殑娲昏穬浼氳瘽</div></div>
       </div>
       <div class="table-wrap">
         <table><thead><tr>
-          <th>用户</th><th>当前 Agent</th><th>最后活动</th><th>操作</th>
+          <th>鐢ㄦ埛</th><th>褰撳墠 Agent</th><th>鏈€鍚庢椿鍔?/th><th>鎿嶄綔</th>
         </tr></thead><tbody id="session-list"></tbody></table>
       </div>
     </div>
@@ -232,58 +232,58 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
     <!-- ===== Logs ===== -->
     <div class="panel" id="panel-logs">
       <div class="page-header">
-        <div><h2>运行日志</h2><div class="sub">系统运行日志 · traceId / 关键词搜索</div></div>
+        <div><h2>杩愯鏃ュ織</h2><div class="sub">绯荤粺杩愯鏃ュ織 路 traceId / 鍏抽敭璇嶆悳绱?/div></div>
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-          <input type="text" id="log-search" placeholder="🔍 traceId 或关键词" style="width:160px;padding:4px 8px;font-size:.75rem;border:1px solid #dcdde1;border-radius:6px;background:#fff" onkeydown="if(event.key==='Enter')loadLogs()">
+          <input type="text" id="log-search" placeholder="馃攳 traceId 鎴栧叧閿瘝" style="width:160px;padding:4px 8px;font-size:.75rem;border:1px solid #dcdde1;border-radius:6px;background:#fff" onkeydown="if(event.key==='Enter')loadLogs()">
           <div class="btn-group" id="log-level-filter">
-            <button class="btn btn-sm" data-level="" onclick="setLogLevel('')">全部</button>
+            <button class="btn btn-sm" data-level="" onclick="setLogLevel('')">鍏ㄩ儴</button>
             <button class="btn btn-sm" data-level="info" onclick="setLogLevel('info')">INFO</button>
             <button class="btn btn-sm" data-level="warn" onclick="setLogLevel('warn')">WARN</button>
             <button class="btn btn-sm" data-level="error" onclick="setLogLevel('error')">ERROR</button>
             <button class="btn btn-sm" data-level="debug" onclick="setLogLevel('debug')">DEBUG</button>
             <button class="btn btn-sm" data-level="audit" onclick="setLogLevel('audit')">AUDIT</button>
           </div>
-          <button class="btn btn-outline btn-sm" onclick="loadLogs()">🔄</button>
+          <button class="btn btn-outline btn-sm" onclick="loadLogs()">馃攧</button>
         </div>
       </div>
-      <div class="terminal" id="log-list"><div class="terminal-empty">暂无日志</div></div>
+      <div class="terminal" id="log-list"><div class="terminal-empty">鏆傛棤鏃ュ織</div></div>
       <div style="margin-top:8px;display:flex;align-items:center;gap:8px;font-size:.75rem;color:#b2bec3">
         <span id="log-count"></span>
         <span style="flex:1"></span>
-        <button class="btn btn-outline btn-sm" onclick="toggleLogAutoRefresh()" id="log-auto-refresh-btn">⏸ 暂停</button>
+        <button class="btn btn-outline btn-sm" onclick="toggleLogAutoRefresh()" id="log-auto-refresh-btn">鈴?鏆傚仠</button>
       </div>
     </div>
 
     <!-- ===== Settings ===== -->
     <div class="panel" id="panel-settings">
       <div class="page-header">
-        <div><h2>系统设置</h2><div class="sub">配置大模型连接</div></div>
-        <div><button class="btn btn-primary btn-sm" onclick="saveLlmSettings()">保存</button></div>
+        <div><h2>绯荤粺璁剧疆</h2><div class="sub">閰嶇疆澶фā鍨嬭繛鎺?/div></div>
+        <div><button class="btn btn-primary btn-sm" onclick="saveLlmSettings()">淇濆瓨</button></div>
       </div>
       <div class="card" style="padding:18px 22px;max-width:520px">
         <div class="form-group">
-          <label>接口提供商</label>
+          <label>鎺ュ彛鎻愪緵鍟?/label>
           <select class="form-control" id="s-provider">
             <option value="deepseek">DeepSeek</option>
             <option value="openai">OpenAI</option>
-            <option value="custom">自定义</option>
+            <option value="custom">鑷畾涔?/option>
           </select>
         </div>
         <div class="form-group">
           <label>API Key</label>
           <input class="form-control" id="s-apikey" type="password" placeholder="sk-...">
-          <div style="font-size:.68rem;color:#b2bec3;margin-top:4px">已保存的 key 不会完整显示，重新输入会覆盖</div>
+          <div style="font-size:.68rem;color:#b2bec3;margin-top:4px">宸蹭繚瀛樼殑 key 涓嶄細瀹屾暣鏄剧ず锛岄噸鏂拌緭鍏ヤ細瑕嗙洊</div>
         </div>
         <div class="form-group">
-          <label>接口地址</label>
+          <label>鎺ュ彛鍦板潃</label>
           <input class="form-control" id="s-baseurl" placeholder="https://api.deepseek.com/v1">
         </div>
         <div class="form-group">
-          <label>模型名称</label>
+          <label>妯″瀷鍚嶇О</label>
           <input class="form-control" id="s-model" placeholder="deepseek-chat">
         </div>
         <div class="form-group">
-          <label>温度 (0-2)</label>
+          <label>娓╁害 (0-2)</label>
           <input class="form-control" id="s-temp" type="number" step="0.1" min="0" max="2" value="0.7">
         </div>
       </div>
@@ -292,8 +292,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
     <!-- ===== Model Providers ===== -->
     <div class="panel" id="panel-providers">
       <div class="page-header">
-        <div><h2>模型供应</h2><div class="sub">管理多个 LLM 模型供应商，Agent 可选不同供应商</div></div>
-        <div><button class="btn btn-primary btn-sm" onclick="showProviderModal()">＋ 添加模型</button></div>
+        <div><h2>妯″瀷渚涘簲</h2><div class="sub">绠＄悊澶氫釜 LLM 妯″瀷渚涘簲鍟嗭紝Agent 鍙€変笉鍚屼緵搴斿晢</div></div>
+        <div><button class="btn btn-primary btn-sm" onclick="showProviderModal()">锛?娣诲姞妯″瀷</button></div>
       </div>
       <div id="provider-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px"></div>
     </div>
@@ -302,57 +302,57 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
 <!-- ===== Modal ===== -->
 <div class="modal-overlay" id="modal">
   <div class="modal">
-    <h3 id="modal-title">新建 Agent</h3>
+    <h3 id="modal-title">鏂板缓 Agent</h3>
     <div class="form-group">
       <label>Agent ID</label>
-      <input class="form-control" id="f-id" placeholder="例如: assistant">
+      <input class="form-control" id="f-id" placeholder="渚嬪: assistant">
     </div>
     <div class="form-group">
-      <label>名称</label>
-      <input class="form-control" id="f-name" placeholder="例如: 小星">
+      <label>鍚嶇О</label>
+      <input class="form-control" id="f-name" placeholder="渚嬪: 灏忔槦">
     </div>
     <div class="form-group">
-      <label>模型</label>
+      <label>妯″瀷</label>
       <input class="form-control" id="f-model" value="deepseek-chat">
     </div>
     <div class="form-group">
-      <label>供应商（留空使用默认）</label>
+      <label>渚涘簲鍟嗭紙鐣欑┖浣跨敤榛樿锛?/label>
       <select class="form-control" id="f-provider">
-        <option value="">默认供应商</option>
+        <option value="">榛樿渚涘簲鍟?/option>
       </select>
     </div>
     <div class="form-group">
-      <label>温度 (0-2)</label>
+      <label>娓╁害 (0-2)</label>
       <input class="form-control" id="f-temp" type="number" step="0.1" min="0" max="2" value="0.7">
     </div>
     <div class="form-group">
-      <label>系统提示词</label>
-      <textarea class="form-control" id="f-prompt" rows="3" placeholder="你是 AI 助手..."></textarea>
+      <label>绯荤粺鎻愮ず璇?/label>
+      <textarea class="form-control" id="f-prompt" rows="3" placeholder="浣犳槸 AI 鍔╂墜..."></textarea>
     </div>
     <div class="form-group">
-      <label>问候语（可选）</label>
-      <input class="form-control" id="f-greeting" placeholder="你好呀！我是...">
+      <label>闂€欒锛堝彲閫夛級</label>
+      <input class="form-control" id="f-greeting" placeholder="浣犲ソ鍛€锛佹垜鏄?..">
     </div>
     <div class="form-group">
-      <label>人格设定（可选）</label>
-      <input class="form-control" id="f-persona" placeholder="你是一个热情友好的助手">
+      <label>浜烘牸璁惧畾锛堝彲閫夛級</label>
+      <input class="form-control" id="f-persona" placeholder="浣犳槸涓€涓儹鎯呭弸濂界殑鍔╂墜">
     </div>
     <div class="form-group">
-      <label>工具列表（逗号分隔）</label>
+      <label>宸ュ叿鍒楄〃锛堥€楀彿鍒嗛殧锛?/label>
       <input class="form-control" id="f-tools" placeholder="web_search, retrieve_knowledge, get_time">
     </div>
     <div class="form-group">
-      <label>路由类型</label>
+      <label>璺敱绫诲瀷</label>
       <select class="form-control" id="f-route">
-        <option value="catchall">catchall（兜底）</option>
-        <option value="command">command（命令触发）</option>
-        <option value="keyword">keyword（关键词触发）</option>
-        <option value="llm_match">llm_match（LLM 判断）</option>
+        <option value="catchall">catchall锛堝厹搴曪級</option>
+        <option value="command">command锛堝懡浠よЕ鍙戯級</option>
+        <option value="keyword">keyword锛堝叧閿瘝瑙﹀彂锛?/option>
+        <option value="llm_match">llm_match锛圠LM 鍒ゆ柇锛?/option>
       </select>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeModal()">取消</button>
-      <button class="btn btn-primary" id="modal-save" onclick="saveAgent()">保存</button>
+      <button class="btn btn-outline" onclick="closeModal()">鍙栨秷</button>
+      <button class="btn btn-primary" id="modal-save" onclick="saveAgent()">淇濆瓨</button>
     </div>
     <input type="hidden" id="f-edit-id">
   </div>
@@ -361,17 +361,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
 <!-- ===== Provider Modal ===== -->
 <div class="modal-overlay" id="provider-modal">
   <div class="modal">
-    <h3 id="provider-modal-title">添加模型</h3>
+    <h3 id="provider-modal-title">娣诲姞妯″瀷</h3>
     <div class="form-group">
-      <label>名称</label>
-      <input class="form-control" id="p-name" placeholder="例如: DeepSeek">
+      <label>鍚嶇О</label>
+      <input class="form-control" id="p-name" placeholder="渚嬪: DeepSeek">
     </div>
     <div class="form-group">
-      <label>供应商类型</label>
+      <label>渚涘簲鍟嗙被鍨?/label>
       <select class="form-control" id="p-type">
-        <option value="openai">OpenAI 兼容</option>
+        <option value="openai">OpenAI 鍏煎</option>
         <option value="deepseek">DeepSeek</option>
-        <option value="custom">自定义</option>
+        <option value="custom">鑷畾涔?/option>
       </select>
     </div>
     <div class="form-group">
@@ -379,20 +379,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
       <input class="form-control" id="p-apikey" type="password" placeholder="sk-...">
     </div>
     <div class="form-group">
-      <label>接口地址</label>
+      <label>鎺ュ彛鍦板潃</label>
       <input class="form-control" id="p-baseurl" placeholder="https://api.deepseek.com/v1">
     </div>
     <div class="form-group">
-      <label>模型列表（JSON 数组，逗号分隔也会自动转）</label>
+      <label>妯″瀷鍒楄〃锛圝SON 鏁扮粍锛岄€楀彿鍒嗛殧涔熶細鑷姩杞級</label>
       <input class="form-control" id="p-models" placeholder="deepseek-chat, deepseek-reasoner">
     </div>
     <div class="form-group">
-      <label><input type="checkbox" id="p-default"> 设为默认供应商</label>
+      <label><input type="checkbox" id="p-default"> 璁句负榛樿渚涘簲鍟?/label>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeProviderModal()">取消</button>
-      <button class="btn btn-primary" onclick="saveProvider()">保存</button>
-      <button class="btn btn-outline" id="btn-test-provider" onclick="testProvider()" style="margin-left:auto;color:#2ecc71;border-color:#2ecc71">▶ 测试连接</button>
+      <button class="btn btn-outline" onclick="closeProviderModal()">鍙栨秷</button>
+      <button class="btn btn-primary" onclick="saveProvider()">淇濆瓨</button>
+      <button class="btn btn-outline" id="btn-test-provider" onclick="testProvider()" style="margin-left:auto;color:#2ecc71;border-color:#2ecc71">鈻?娴嬭瘯杩炴帴</button>
     </div>
     <div id="test-result" style="margin-top:8px;font-size:.75rem;display:none"></div>
     <input type="hidden" id="p-edit-id">
@@ -402,10 +402,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
 <!-- ===== Provider Detail Modal ===== -->
 <div class="modal-overlay" id="provider-detail-modal">
   <div class="modal" style="width:560px">
-    <h3 id="pd-title">模型详情</h3>
+    <h3 id="pd-title">妯″瀷璇︽儏</h3>
     <div id="pd-content" style="font-size:.82rem;line-height:1.7"></div>
     <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeProviderDetail()">关闭</button>
+      <button class="btn btn-outline" onclick="closeProviderDetail()">鍏抽棴</button>
     </div>
   </div>
 </div>
@@ -429,8 +429,8 @@ async function api(path, opts) {
   }
   if (!res.ok && res.status !== 401) {
     const body = await res.json().catch(() => ({}));
-    console.error('API 错误:', path, res.status, body);
-    return { error: body.error || `请求失败 (${res.status})` };
+    console.error('API 閿欒:', path, res.status, body);
+    return { error: body.error || `璇锋眰澶辫触 (${res.status})` };
   }
   return res.json();
 }
@@ -459,8 +459,8 @@ async function doLogin() {
       $('login-error').style.display = 'block';
     }
   } catch (e) {
-    console.error('登录请求失败:', e);
-    $('login-error').textContent = '连接失败: ' + (e.message || '未知错误');
+    console.error('鐧诲綍璇锋眰澶辫触:', e);
+    $('login-error').textContent = '杩炴帴澶辫触: ' + (e.message || '鏈煡閿欒');
     $('login-error').style.display = 'block';
   }
 }
@@ -492,7 +492,7 @@ function connectWs() {
       try {
         const msg = JSON.parse(e.data);
         if (msg.type === 'agent.handleMessage') {
-          // 实时推送，目前仅做日志
+          // 瀹炴椂鎺ㄩ€侊紝鐩墠浠呭仛鏃ュ織
         }
       } catch {}
     };
@@ -509,14 +509,14 @@ async function sendChat() {
   let userId = localStorage.getItem('chat_user_id');
   if (!userId) { userId = 'web_' + Date.now(); localStorage.setItem('chat_user_id', userId); }
   appendChatMsg('user', text);
-  const loadingDiv = appendChatMsg('assistant', '思考中...');
+  const loadingDiv = appendChatMsg('assistant', '鎬濊€冧腑...');
   const r = await api('/chat', { method: 'POST', body: JSON.stringify({ text, userId }) });
   const msgs = $('chat-messages');
   if (loadingDiv && loadingDiv.parentNode) msgs.removeChild(loadingDiv);
   if (r && r.reply) {
     appendChatMsg('assistant', r.reply);
   } else {
-    appendChatMsg('assistant', '请求失败');
+    appendChatMsg('assistant', '璇锋眰澶辫触');
   }
 }
 
@@ -525,7 +525,7 @@ function appendChatMsg(role, text) {
   const ts = new Date().toLocaleTimeString();
   div.style.cssText = 'margin-bottom:12px;display:flex;gap:8px';
   div.innerHTML = `
-    <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0;${role==='user'?'background:#667eea;color:#fff':'background:#eef0f6;color:#636e72'}">${role==='user'?'你':'🤖'}</div>
+    <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0;${role==='user'?'background:#667eea;color:#fff':'background:#eef0f6;color:#636e72'}">${role==='user'?'浣?:'馃'}</div>
     <div style="flex:1">
       <div style="font-size:.65rem;color:#b2bec3;margin-bottom:2px">${ts}</div>
       <div style="background:${role==='user'?'#eef3ff':'#fff'};padding:8px 12px;border-radius:8px;font-size:.8rem;line-height:1.6;white-space:pre-wrap">${esc(text)}</div>
@@ -537,7 +537,7 @@ function appendChatMsg(role, text) {
 }
 
 function clearChat() {
-  $('chat-messages').innerHTML = '<div style="color:#b2bec3;text-align:center;padding:40px 0">发送消息开始对话</div>';
+  $('chat-messages').innerHTML = '<div style="color:#b2bec3;text-align:center;padding:40px 0">鍙戦€佹秷鎭紑濮嬪璇?/div>';
 }
 
 // === Messages ===
@@ -552,14 +552,14 @@ async function loadMessages() {
         <td><span class="tag ${m.role==='user'?'info':'on'}">${m.role}</span></td>
         <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc((m.text||'').slice(0,80))}</td>
       </tr>`).join('')
-    : '<tr><td colspan="4"><div class="empty"><p>暂无消息记录</p></div></td></tr>';
+    : '<tr><td colspan="4"><div class="empty"><p>鏆傛棤娑堟伅璁板綍</p></div></td></tr>';
 }
 
 async function loadMsgUsers() {
   const users = await api('/messages/users');
   if (!users) return;
   const sel = $('msg-user-filter');
-  sel.innerHTML = '<option value="">全部用户</option>' + users.map(u => `<option value="${u.user_id}">${esc(u.user_id)} (${u.count})</option>`).join('');
+  sel.innerHTML = '<option value="">鍏ㄩ儴鐢ㄦ埛</option>' + users.map(u => `<option value="${u.user_id}">${esc(u.user_id)} (${u.count})</option>`).join('');
 }
 
 // === Export / Import ===
@@ -581,10 +581,10 @@ async function importData(event) {
     const data = JSON.parse(text);
     const r = await api('/import', { method: 'POST', body: JSON.stringify(data) });
     if (!r) return;
-    alert(`导入完成: ${r.imported} 条记录`);
+    alert(`瀵煎叆瀹屾垚: ${r.imported} 鏉¤褰昤);
     location.reload();
   } catch (e) {
-    alert('导入失败: ' + e.message);
+    alert('瀵煎叆澶辫触: ' + e.message);
   }
 }
 
@@ -620,14 +620,14 @@ document.querySelectorAll('.nav-item').forEach(item => {
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     item.classList.add('active');
     $(`panel-${item.dataset.tab}`).classList.add('active');
-    // 点击运行日志时滚到最底部（最新日志）
+    // 鐐瑰嚮杩愯鏃ュ織鏃舵粴鍒版渶搴曢儴锛堟渶鏂版棩蹇楋級
     if (item.dataset.tab === 'logs') scrollLogToBottom();
   });
 });
 
 // === Modal ===
 function showCreateModal() {
-  $('modal-title').textContent = '新建 Agent';
+  $('modal-title').textContent = '鏂板缓 Agent';
   $('f-id').value = '';
   $('f-id').disabled = false;
   $('f-name').value = '';
@@ -646,7 +646,7 @@ function showCreateModal() {
 function showEditModal(id) {
   const a = state.agents.find(x => x.id === id);
   if (!a) return;
-  $('modal-title').textContent = `编辑 Agent: ${a.name || a.id}`;
+  $('modal-title').textContent = `缂栬緫 Agent: ${a.name || a.id}`;
   $('f-id').value = a.id;
   $('f-id').disabled = true;
   $('f-name').value = a.name || '';
@@ -679,8 +679,8 @@ async function saveAgent() {
     route: { type: $('f-route').value },
     mcpServers: [],
   };
-  if (!body.id) return alert('请输入 Agent ID');
-  if (!body.systemPrompt) return alert('请输入系统提示词');
+  if (!body.id) return alert('璇疯緭鍏?Agent ID');
+  if (!body.systemPrompt) return alert('璇疯緭鍏ョ郴缁熸彁绀鸿瘝');
 
   const editId = $('f-edit-id').value;
   if (editId) {
@@ -694,31 +694,31 @@ async function saveAgent() {
 
 // === Agents ===
 async function loadAgents() {
-  $('agent-list').innerHTML = '<div class="empty"><p>加载中...</p></div>';
+  $('agent-list').innerHTML = '<div class="empty"><p>鍔犺浇涓?..</p></div>';
   state.agents = (await api('/agents')) || [];
   const list = $('agent-list');
   if (!state.agents.length) {
-    list.innerHTML = '<div class="empty"><div class="ico">🤖</div><p>暂无 Agent，点击右上角新建</p></div>';
+    list.innerHTML = '<div class="empty"><div class="ico">馃</div><p>鏆傛棤 Agent锛岀偣鍑诲彸涓婅鏂板缓</p></div>';
     return;
   }
   list.innerHTML = state.agents.map(a => {
-    const routeLabel = { catchall: '兜底', command: '命令', keyword: '关键词', llm_match: 'LLM 判断' }[a.route?.type] || a.route?.type;
+    const routeLabel = { catchall: '鍏滃簳', command: '鍛戒护', keyword: '鍏抽敭璇?, llm_match: 'LLM 鍒ゆ柇' }[a.route?.type] || a.route?.type;
     return `<div class="card">
       <div class="card-header">
         <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1rem;font-weight:600">${(a.name || a.id)[0].toUpperCase()}</div>
         <div><h3>${esc(a.name || a.id)}</h3>
-          <div style="font-size:.72rem;color:#b2bec3">${esc(a.id)} · ${esc(a.model)}</div>
+          <div style="font-size:.72rem;color:#b2bec3">${esc(a.id)} 路 ${esc(a.model)}</div>
         </div>
-        <span class="tag ${a.enabled ? 'on' : 'off'}" style="margin-left:auto">${a.enabled ? '已启用' : '已停用'}</span>
+        <span class="tag ${a.enabled ? 'on' : 'off'}" style="margin-left:auto">${a.enabled ? '宸插惎鐢? : '宸插仠鐢?}</span>
       </div>
       <div class="card-body">${esc((a.systemPrompt || '').slice(0, 200))}</div>
       <div class="card-meta">
-        <span>🔄 ${routeLabel}</span>
-        ${a.route.priority != null ? `<span>⚡ 优先级 ${a.route.priority}</span>` : ''}
-        ${a.greeting ? `<span>💬 ${esc(a.greeting)}</span>` : ''}
+        <span>馃攧 ${routeLabel}</span>
+        ${a.route.priority != null ? `<span>鈿?浼樺厛绾?${a.route.priority}</span>` : ''}
+        ${a.greeting ? `<span>馃挰 ${esc(a.greeting)}</span>` : ''}
         <div style="flex:1"></div>
-        <span><button class="btn btn-outline btn-sm" onclick="showEditModal('${a.id}')">编辑</button>
-        <button class="btn btn-sm ${a.enabled ? 'btn-danger' : 'btn-primary'}" onclick="toggleAgent('${a.id}')">${a.enabled ? '停用' : '启用'}</button></span>
+        <span><button class="btn btn-outline btn-sm" onclick="showEditModal('${a.id}')">缂栬緫</button>
+        <button class="btn btn-sm ${a.enabled ? 'btn-danger' : 'btn-primary'}" onclick="toggleAgent('${a.id}')">${a.enabled ? '鍋滅敤' : '鍚敤'}</button></span>
       </div>
     </div>`;
   }).join('');
@@ -734,14 +734,14 @@ async function loadChannels() {
   state.channels = await api('/channels');
   const list = $('channel-list');
   if (!state.channels.length) {
-    list.innerHTML = '<div class="empty"><div class="ico">📡</div><p>暂无通道配置</p></div>';
+    list.innerHTML = '<div class="empty"><div class="ico">馃摗</div><p>鏆傛棤閫氶亾閰嶇疆</p></div>';
     return;
   }
   list.innerHTML = state.channels.map(c => {
     const cfg = c.config || {};
     return `<div class="card">
       <div class="card-header">
-        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#00b894,#00cec9);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem">${c.type === 'qq' ? '💬' : '📡'}</div>
+        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#00b894,#00cec9);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem">${c.type === 'qq' ? '馃挰' : '馃摗'}</div>
         <div><h3>${esc(c.name)}</h3>
           <div style="display:flex;align-items:center;gap:4px;margin-top:2px">
             <span class="status-dot ${c.status}"></span>
@@ -750,21 +750,21 @@ async function loadChannels() {
         </div>
         <div style="margin-left:auto;display:flex;gap:6px">
           ${c.status === 'connected'
-            ? `<button class="btn btn-danger btn-sm" onclick="stopChannel('${c.id}')">断开</button>`
-            : `<button class="btn btn-primary btn-sm" onclick="startChannel('${c.id}')" ${c.status === 'connecting' ? 'disabled' : ''}>${c.status === 'connecting' ? '连接中...' : '连接'}</button>`}
-          <button class="btn btn-outline btn-sm" onclick="editChannel('${c.id}')">配置</button>
+            ? `<button class="btn btn-danger btn-sm" onclick="stopChannel('${c.id}')">鏂紑</button>`
+            : `<button class="btn btn-primary btn-sm" onclick="startChannel('${c.id}')" ${c.status === 'connecting' ? 'disabled' : ''}>${c.status === 'connecting' ? '杩炴帴涓?..' : '杩炴帴'}</button>`}
+          <button class="btn btn-outline btn-sm" onclick="editChannel('${c.id}')">閰嶇疆</button>
         </div>
       </div>
       <div class="card-meta">
-        <span>🔗 ${esc(cfg.ws_url || '-')}</span>
-        <span>📋 ${esc(c.id)}</span>
+        <span>馃敆 ${esc(cfg.ws_url || '-')}</span>
+        <span>馃搵 ${esc(c.id)}</span>
       </div>
     </div>`;
   }).join('');
 }
 
 function statusLabel(s) {
-  return { connected: '已连接', connecting: '连接中', disconnected: '未连接', error: '错误' }[s] || s;
+  return { connected: '宸茶繛鎺?, connecting: '杩炴帴涓?, disconnected: '鏈繛鎺?, error: '閿欒' }[s] || s;
 }
 
 async function startChannel(id) {
@@ -779,9 +779,9 @@ async function editChannel(id) {
   const c = state.channels.find(x => x.id === id);
   if (!c) return;
   const cfg = c.config || {};
-  const url = prompt('WebSocket 地址:', cfg.ws_url || 'ws://127.0.0.1:8080');
+  const url = prompt('WebSocket 鍦板潃:', cfg.ws_url || 'ws://127.0.0.1:8080');
   if (url === null) return;
-  const token = prompt('Token（可选）:', cfg.token || '');
+  const token = prompt('Token锛堝彲閫夛級:', cfg.token || '');
   await api(`/channels/${id}/config`, {
     method: 'PUT',
     body: JSON.stringify({ ws_url: url, token: token || '' })
@@ -797,10 +797,10 @@ async function loadTraces() {
         <td style="font-weight:500">${esc(t.name)}</td>
         <td style="font-size:.72rem;color:#b2bec3;font-family:monospace">${(t.traceId || '').slice(0, 24)}</td>
         <td><span class="tag ${t.status === 'ok' ? 'on' : 'off'}">${t.status}</span></td>
-        <td>${t.duration ? t.duration + 'ms' : '<span style="color:#b2bec3">—</span>'}</td>
+        <td>${t.duration ? t.duration + 'ms' : '<span style="color:#b2bec3">鈥?/span>'}</td>
         <td style="font-size:.75rem;color:#636e72">${t.startTime ? new Date(t.startTime).toLocaleString() : '-'}</td>
       </tr>`).join('')
-    : '<tr><td colspan="5"><div class="empty"><p style="padding:20px">暂无追踪记录</p></div></td></tr>';
+    : '<tr><td colspan="5"><div class="empty"><p style="padding:20px">鏆傛棤杩借釜璁板綍</p></div></td></tr>';
 }
 
 // === Sessions ===
@@ -813,12 +813,12 @@ async function loadSessions() {
         <td style="font-size:.75rem;color:#636e72">${s.updated_at ? new Date(s.updated_at).toLocaleString() : '-'}</td>
         <td>
           <select class="form-control" style="width:auto;display:inline-block;padding:4px 28px 4px 8px;font-size:.72rem" onchange="switchAgent('${s.user_id}',this.value)">
-            <option value="">切换 Agent</option>
+            <option value="">鍒囨崲 Agent</option>
             ${state.agents.map(a => `<option value="${a.id}">${esc(a.name || a.id)}</option>`).join('')}
           </select>
         </td>
       </tr>`).join('')
-    : '<tr><td colspan="4"><div class="empty"><p style="padding:20px">暂无活跃会话</p></div></td></tr>';
+    : '<tr><td colspan="4"><div class="empty"><p style="padding:20px">鏆傛棤娲昏穬浼氳瘽</p></div></td></tr>';
 }
 
 async function switchAgent(userId, agentId) {
@@ -835,23 +835,23 @@ async function loadKB() {
         <span style="flex:1">${esc(d.name)}</span>
         <span style="color:#b2bec3;font-size:.72rem">${(d.size / 1024).toFixed(1)} KB</span>
         <span style="color:#b2bec3;font-size:.72rem">${new Date(d.mtime).toLocaleDateString()}</span>
-        <button class="btn btn-danger btn-sm" onclick="deleteKBDoc('${esc(d.name)}')">删除</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteKBDoc('${esc(d.name)}')">鍒犻櫎</button>
       </div>`).join('')
-    : '<div style="color:#b2bec3;padding:8px 0">暂无文档，将文件放入 data/kb/ 目录，或在线新建</div>';
+    : '<div style="color:#b2bec3;padding:8px 0">鏆傛棤鏂囨。锛屽皢鏂囦欢鏀惧叆 data/kb/ 鐩綍锛屾垨鍦ㄧ嚎鏂板缓</div>';
   $('kb-docs').innerHTML = docsHtml;
 
   state.kb.chunks = await api('/knowledge/chunks');
-  $('chunk-count').textContent = `(${state.kb.chunks.length} 个)`;
+  $('chunk-count').textContent = `(${state.kb.chunks.length} 涓?`;
   $('kb-chunks').innerHTML = state.kb.chunks.length
     ? state.kb.chunks.map(c => `<tr>
         <td style="font-size:.72rem;color:#b2bec3">${c.id}</td>
         <td>${esc(c.file)}</td>
         <td>${c.chunk_index}</td>
-        <td>${c.len} 字</td>
+        <td>${c.len} 瀛?/td>
         <td style="font-size:.72rem;color:#b2bec3">${new Date(c.created_at).toLocaleString()}</td>
-        <td><button class="btn btn-danger btn-sm" onclick="deleteChunk(${c.id})">删除</button></td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteChunk(${c.id})">鍒犻櫎</button></td>
       </tr>`).join('')
-    : '<tr><td colspan="6"><div class="empty"><p>暂无分片数据</p></div></td></tr>';
+    : '<tr><td colspan="6"><div class="empty"><p>鏆傛棤鍒嗙墖鏁版嵁</p></div></td></tr>';
 }
 
 async function deleteChunk(id) {
@@ -879,8 +879,8 @@ async function uploadKBFile(event) {
 
 async function showNewKBDoc() {
   const name = $('kb-filename').value.trim();
-  if (!name) return alert('请输入文件名');
-  const content = window.prompt ? window.prompt(`请输入 ${name} 的内容:`) : '';
+  if (!name) return alert('璇疯緭鍏ユ枃浠跺悕');
+  const content = window.prompt ? window.prompt(`璇疯緭鍏?${name} 鐨勫唴瀹?`) : '';
   if (content === null) return;
   await api('/knowledge/upload', {
     method: 'POST',
@@ -902,15 +902,15 @@ async function loadTools() {
     ? state.tools.map(t => `<div class="card">
         <div style="font-weight:600;font-size:.82rem;margin-bottom:4px">${esc(t.name)}</div>
         <div style="font-size:.75rem;color:#636e72;margin-bottom:4px">${esc(t.description)}</div>
-        <div style="font-size:.68rem;color:#b2bec3">参数: ${Object.keys(t.parameters || {}).join(', ') || '无'}</div>
+        <div style="font-size:.68rem;color:#b2bec3">鍙傛暟: ${Object.keys(t.parameters || {}).join(', ') || '鏃?}</div>
       </div>`).join('')
-    : '<div class="empty"><p>暂无注册的工具</p></div>';
+    : '<div class="empty"><p>鏆傛棤娉ㄥ唽鐨勫伐鍏?/p></div>';
 }
 
 async function connectExternalMCP() {
-  const url = prompt('MCP 服务器 WebSocket 地址:');
+  const url = prompt('MCP 鏈嶅姟鍣?WebSocket 鍦板潃:');
   if (!url) return;
-  const name = prompt('名称（可选）:') || '';
+  const name = prompt('鍚嶇О锛堝彲閫夛級:') || '';
   await api('/tools/external/connect', {
     method: 'POST',
     body: JSON.stringify({ url, name: name || undefined }),
@@ -932,7 +932,7 @@ async function loadLlmSettings() {
   const s = await api('/settings/llm');
   if (!s) return;
   $('s-provider').value = s.provider || 'deepseek';
-  $('s-apikey').value = s._hasKey ? '••••••••' : '';
+  $('s-apikey').value = s._hasKey ? '鈥⑩€⑩€⑩€⑩€⑩€⑩€⑩€? : '';
   $('s-baseurl').value = s.baseUrl || 'https://api.deepseek.com/v1';
   $('s-model').value = s.model || 'deepseek-chat';
   $('s-temp').value = s.temperature ?? 0.7;
@@ -946,10 +946,10 @@ async function saveLlmSettings() {
     model: $('s-model').value.trim(),
     temperature: parseFloat($('s-temp').value) || 0.7,
   };
-  if (!body.baseUrl) return alert('请输入接口地址');
-  if (!body.model) return alert('请输入模型名称');
+  if (!body.baseUrl) return alert('璇疯緭鍏ユ帴鍙ｅ湴鍧€');
+  if (!body.model) return alert('璇疯緭鍏ユā鍨嬪悕绉?);
   const r = await api('/settings/llm', { method: 'PUT', body: JSON.stringify(body) });
-  if (r && r.ok) { alert('保存成功'); loadLlmSettings(); }
+  if (r && r.ok) { alert('淇濆瓨鎴愬姛'); loadLlmSettings(); }
 }
 
 // === Providers ===
@@ -960,47 +960,47 @@ async function loadProviders() {
         const models = parseModels(p.models);
         return `<div class="card" style="cursor:pointer;opacity:${p.enabled===0?'0.55':'1'}" onclick="showProviderDetail('${p.id}')">
           <div class="card-header">
-            <div class="card-icon" style="background:${p.isDefault ? 'linear-gradient(135deg,#667eea,#764ba2)' : '#f0f0f0'};color:${p.isDefault ? '#fff' : '#636e72'}">${p.provider === 'openai' ? '🤖' : p.provider === 'deepseek' ? '🧠' : '⚙️'}</div>
+            <div class="card-icon" style="background:${p.isDefault ? 'linear-gradient(135deg,#667eea,#764ba2)' : '#f0f0f0'};color:${p.isDefault ? '#fff' : '#636e72'}">${p.provider === 'openai' ? '馃' : p.provider === 'deepseek' ? '馃' : '鈿欙笍'}</div>
             <div class="card-info">
-              <h3>${esc(p.name)} ${p.isDefault ? '<span class="tag info">默认</span>' : ''}
+              <h3>${esc(p.name)} ${p.isDefault ? '<span class="tag info">榛樿</span>' : ''}
                 <label class="toggle" onclick="event.stopPropagation()">
                   <input type="checkbox" ${p.enabled!==0?'checked':''} onchange="toggleProvider('${p.id}',this.checked)">
                   <span class="slider"></span>
                 </label>
               </h3>
-              <div class="sub">${esc(p.id)} · ${esc(p.provider)}</div>
+              <div class="sub">${esc(p.id)} 路 ${esc(p.provider)}</div>
             </div>
             <div class="card-actions">
-              <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();editProvider('${p.id}')">编辑</button>
-              <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteProvider('${p.id}')">删除</button>
+              <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();editProvider('${p.id}')">缂栬緫</button>
+              <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteProvider('${p.id}')">鍒犻櫎</button>
             </div>
           </div>
           <div class="card-body">
             <div class="row">
-              <span class="item"><span class="tag">接口</span> ${esc(p.baseUrl)}</span>
-              <span class="item"><span class="tag">模型</span> ${models.join(', ') || '—'}</span>
+              <span class="item"><span class="tag">鎺ュ彛</span> ${esc(p.baseUrl)}</span>
+              <span class="item"><span class="tag">妯″瀷</span> ${models.join(', ') || '鈥?}</span>
             </div>
           </div>
           <div class="card-footer">
-            <span id="p-usage-${p.id}">⏳ 加载用量...</span>
+            <span id="p-usage-${p.id}">鈴?鍔犺浇鐢ㄩ噺...</span>
             <span id="p-agents-${p.id}"></span>
           </div>
         </div>`;
       }).join('')
-    : '<div class="empty"><div class="ico">🏭</div><p>暂无模型供应，点击右上角添加</p></div>';
+    : '<div class="empty"><div class="ico">馃彮</div><p>鏆傛棤妯″瀷渚涘簲锛岀偣鍑诲彸涓婅娣诲姞</p></div>';
   // Refresh agent edit provider dropdown
   const sel = $('f-provider');
   if (sel) {
     const cur = sel.value;
-    sel.innerHTML = '<option value="">默认供应商</option>' + state.providers.map(p => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
+    sel.innerHTML = '<option value="">榛樿渚涘簲鍟?/option>' + state.providers.map(p => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
     sel.value = cur;
   }
   // Load stats for each provider
   state.providers.forEach(async p => {
     const stats = await api('/providers/' + p.id + '/stats');
     if (!stats) return;
-    $('p-usage-' + p.id).textContent = `🔤 ${formatTokens(stats.tokenStats.totalTokens)} (${stats.tokenStats.callCount} 次调用)`;
-    $('p-agents-' + p.id).textContent = `🤖 ${stats.agentCount} 个 Agent 使用`;
+    $('p-usage-' + p.id).textContent = `馃敜 ${formatTokens(stats.tokenStats.totalTokens)} (${stats.tokenStats.callCount} 娆¤皟鐢?`;
+    $('p-agents-' + p.id).textContent = `馃 ${stats.agentCount} 涓?Agent 浣跨敤`;
   });
 }
 
@@ -1018,41 +1018,41 @@ async function showProviderDetail(id) {
   const agents = await api('/providers/' + id + '/agents');
   const models = parseModels(p.models);
   const ts = stats?.tokenStats || {};
-  const agentRows = (agents || []).map(a => `<div style="padding:4px 0">🤖 ${esc(a.name || a.id)}</div>`).join('') || '<div style="color:#b2bec3">无 Agent 使用此模型</div>';
-  $('pd-title').textContent = `📊 ${esc(p.name)} 详情`;
+  const agentRows = (agents || []).map(a => `<div style="padding:4px 0">馃 ${esc(a.name || a.id)}</div>`).join('') || '<div style="color:#b2bec3">鏃?Agent 浣跨敤姝ゆā鍨?/div>';
+  $('pd-title').textContent = `馃搳 ${esc(p.name)} 璇︽儏`;
   $('pd-content').innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
       <div class="card" style="padding:12px;text-align:center">
         <div style="font-size:1.2rem;font-weight:700;color:#667eea">${formatTokens(ts.totalTokens || 0)}</div>
-        <div style="font-size:.7rem;color:#b2bec3">总 Token 消耗</div>
+        <div style="font-size:.7rem;color:#b2bec3">鎬?Token 娑堣€?/div>
       </div>
       <div class="card" style="padding:12px;text-align:center">
         <div style="font-size:1.2rem;font-weight:700;color:#27ae60">${ts.callCount || 0}</div>
-        <div style="font-size:.7rem;color:#b2bec3">总调用次数</div>
+        <div style="font-size:.7rem;color:#b2bec3">鎬昏皟鐢ㄦ鏁?/div>
       </div>
     </div>
     <div style="margin-bottom:12px">
-      <div style="font-weight:600;font-size:.82rem;margin-bottom:6px">⚙️ 配置</div>
+      <div style="font-weight:600;font-size:.82rem;margin-bottom:6px">鈿欙笍 閰嶇疆</div>
       <div style="font-size:.75rem;color:#636e72;line-height:1.8">
-        <div>类型: ${esc(p.provider)}</div>
-        <div>地址: ${esc(p.baseUrl)}</div>
-        <div>模型: ${models.join(', ')}</div>
-        <div>API Key: ${p.apiKey ? p.apiKey.slice(0, 8) + '****' : '未设置'}</div>
-        <div>默认: ${p.isDefault ? '✅ 是' : '❌ 否'}</div>
+        <div>绫诲瀷: ${esc(p.provider)}</div>
+        <div>鍦板潃: ${esc(p.baseUrl)}</div>
+        <div>妯″瀷: ${models.join(', ')}</div>
+        <div>API Key: ${p.apiKey ? p.apiKey.slice(0, 8) + '****' : '鏈缃?}</div>
+        <div>榛樿: ${p.isDefault ? '鉁?鏄? : '鉂?鍚?}</div>
       </div>
     </div>
     ${ts.modelBreakdown?.length ? `
     <div style="margin-bottom:12px">
-      <div style="font-weight:600;font-size:.82rem;margin-bottom:6px">📈 各模型用量</div>
+      <div style="font-weight:600;font-size:.82rem;margin-bottom:6px">馃搱 鍚勬ā鍨嬬敤閲?/div>
       ${ts.modelBreakdown.map(m => `
         <div style="display:flex;justify-content:space-between;font-size:.75rem;padding:4px 0;border-bottom:1px solid #f0f0f0">
           <span>${esc(m.model)}</span>
-          <span>${formatTokens(m.totalTokens)} tokens · ${m.callCount} 次</span>
+          <span>${formatTokens(m.totalTokens)} tokens 路 ${m.callCount} 娆?/span>
         </div>
       `).join('')}
     </div>` : ''}
     <div>
-      <div style="font-weight:600;font-size:.82rem;margin-bottom:6px">🤖 使用此模型的 Agent</div>
+      <div style="font-weight:600;font-size:.82rem;margin-bottom:6px">馃 浣跨敤姝ゆā鍨嬬殑 Agent</div>
       ${agentRows}
     </div>
   `;
@@ -1065,7 +1065,7 @@ function closeProviderDetail() {
 
 function showProviderModal(data) {
   $('p-edit-id').value = data ? data.id : '';
-  $('provider-modal-title').textContent = data ? '编辑模型' : '添加模型';
+  $('provider-modal-title').textContent = data ? '缂栬緫妯″瀷' : '娣诲姞妯″瀷';
   $('p-name').value = data ? data.name : '';
   $('p-type').value = data ? data.provider : 'openai';
   $('p-apikey').value = '';
@@ -1089,13 +1089,13 @@ async function saveProvider() {
     models: JSON.stringify(parseModels($('p-models').value)),
     isDefault: $('p-default').checked ? 1 : 0,
   };
-  if (!body.name) return alert('请输入名称');
-  if (!body.baseUrl) return alert('请输入接口地址');
+  if (!body.name) return alert('璇疯緭鍏ュ悕绉?);
+  if (!body.baseUrl) return alert('璇疯緭鍏ユ帴鍙ｅ湴鍧€');
   const r = isEdit
     ? await api('/providers/' + $('p-edit-id').value, { method: 'PUT', body: JSON.stringify(body) })
     : await api('/providers', { method: 'POST', body: JSON.stringify(body) });
   if (r && !r.error) { closeProviderModal(); loadProviders(); }
-  else if (r && r.error) { alert('保存失败: ' + r.error); }
+  else if (r && r.error) { alert('淇濆瓨澶辫触: ' + r.error); }
 }
 
 async function editProvider(id) {
@@ -1104,7 +1104,7 @@ async function editProvider(id) {
 }
 
 async function deleteProvider(id) {
-  if (!confirm('确定删除此模型？')) return;
+  if (!confirm('纭畾鍒犻櫎姝ゆā鍨嬶紵')) return;
   await api('/providers/' + id, { method: 'DELETE' });
   loadProviders();
 }
@@ -1114,7 +1114,7 @@ async function toggleProvider(id, enabled) {
   if (r && !r.error) {
     loadProviders();
   } else if (r && r.error) {
-    alert('操作失败: ' + r.error);
+    alert('鎿嶄綔澶辫触: ' + r.error);
     loadProviders();
   }
 }
@@ -1125,28 +1125,28 @@ async function testProvider() {
   const apiKey = $('p-apikey').value.trim();
   const baseUrl = $('p-baseurl').value.trim();
   const models = parseModels($('p-models').value);
-  if (!baseUrl) return alert('请先填写接口地址');
-  if (!apiKey) return alert('请先填写 API Key');
+  if (!baseUrl) return alert('璇峰厛濉啓鎺ュ彛鍦板潃');
+  if (!apiKey) return alert('璇峰厛濉啓 API Key');
   const btn = $('btn-test-provider');
   const result = $('test-result');
-  btn.textContent = '⏳ 测试中...';
+  btn.textContent = '鈴?娴嬭瘯涓?..';
   btn.disabled = true;
   result.style.display = 'block';
-  result.innerHTML = '⏳ 正在连接...';
+  result.innerHTML = '鈴?姝ｅ湪杩炴帴...';
   try {
     const r = await api('/providers/test', {
       method: 'POST',
       body: JSON.stringify({ name, provider: providerType, apiKey, baseUrl, models })
     });
     if (r && r.success) {
-      result.innerHTML = '✅ 连接成功！' + (r.model ? ` 返回模型: ${esc(r.model)}` : '');
+      result.innerHTML = '鉁?杩炴帴鎴愬姛锛? + (r.model ? ` 杩斿洖妯″瀷: ${esc(r.model)}` : '');
     } else {
-      result.innerHTML = '❌ 连接失败: ' + esc(r?.error || '未知错误');
+      result.innerHTML = '鉂?杩炴帴澶辫触: ' + esc(r?.error || '鏈煡閿欒');
     }
   } catch (e) {
-    result.innerHTML = '❌ 请求异常: ' + esc(e.message);
+    result.innerHTML = '鉂?璇锋眰寮傚父: ' + esc(e.message);
   } finally {
-    btn.textContent = '▶ 测试连接';
+    btn.textContent = '鈻?娴嬭瘯杩炴帴';
     btn.disabled = false;
   }
 }
@@ -1179,8 +1179,8 @@ async function loadLogs() {
   if (!r) return;
   const container = $('log-list');
   if (!r.entries?.length) {
-    container.innerHTML = '<div class="terminal-empty">暂无日志</div>';
-    $('log-count').textContent = '共 0 条';
+    container.innerHTML = '<div class="terminal-empty">鏆傛棤鏃ュ織</div>';
+    $('log-count').textContent = '鍏?0 鏉?;
     return;
   }
   container.innerHTML = r.entries.map(e => {
@@ -1205,9 +1205,8 @@ async function loadLogs() {
     const compHtml = component ? '<span class="comp">' + esc(component) + '</span> ' : '';
     return '<div class="line line-' + level + '"><span class="ts">' + esc(e.ts) + '</span> <span class="level">' + level.toUpperCase() + '</span> ' + compHtml + '<span class="msg">' + esc(message) + '</span>' + metaStr + traceHtml + '</div>';
   }).join('');
-  $('log-count').textContent = '共 ' + r.total + ' 条';
-  // 自动刷新时：仅在已在底部时跟随
-  var atBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 60;
+  $('log-count').textContent = '鍏?' + r.total + ' 鏉?;
+  // 鑷姩鍒锋柊鏃讹細浠呭湪宸插湪搴曢儴鏃惰窡闅?  var atBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 60;
   if (atBottom) container.scrollTop = container.scrollHeight;
 }
 
@@ -1223,8 +1222,8 @@ async function loadLogs() {
   if (!r) return;
   const container = $('log-list');
   if (!r.entries?.length) {
-    container.innerHTML = '<div class="terminal-empty">暂无日志</div>';
-    $('log-count').textContent = '共 0 条';
+    container.innerHTML = '<div class="terminal-empty">鏆傛棤鏃ュ織</div>';
+    $('log-count').textContent = '鍏?0 鏉?;
     return;
   }
   container.innerHTML = r.entries.map(e => {
@@ -1249,9 +1248,8 @@ async function loadLogs() {
     const compHtml = component ? '<span class="comp">' + esc(component) + '</span> ' : '';
     return '<div class="line line-' + level + '"><span class="ts">' + esc(e.ts) + '</span> <span class="level">' + level.toUpperCase() + '</span> ' + compHtml + '<span class="msg">' + esc(message) + '</span>' + metaStr + traceHtml + '</div>';
   }).join('');
-  $('log-count').textContent = '共 ' + r.total + ' 条';
-  // 首次打开或刷新自动滚到底部（最新日志）；后续自动刷新时仅当已在底部才滚动
-  if (logFirstLoad) {
+  $('log-count').textContent = '鍏?' + r.total + ' 鏉?;
+  // 棣栨鎵撳紑鎴栧埛鏂拌嚜鍔ㄦ粴鍒板簳閮紙鏈€鏂版棩蹇楋級锛涘悗缁嚜鍔ㄥ埛鏂版椂浠呭綋宸插湪搴曢儴鎵嶆粴鍔?  if (logFirstLoad) {
     logFirstLoad = false;
     setTimeout(function() { container.scrollTop = container.scrollHeight; }, 50);
   } else {
@@ -1273,8 +1271,8 @@ async function loadLogs() {
   if (!r) return;
   const container = $('log-list');
   if (!r.entries?.length) {
-    container.innerHTML = '<div class="terminal-empty">暂无日志</div>';
-    $('log-count').textContent = '共 0 条';
+    container.innerHTML = '<div class="terminal-empty">鏆傛棤鏃ュ織</div>';
+    $('log-count').textContent = '鍏?0 鏉?;
     return;
   }
   container.innerHTML = r.entries.map(e => {
@@ -1302,7 +1300,7 @@ async function loadLogs() {
     const compHtml = component ? '<span class="comp">' + esc(component) + '</span> ' : '';
     return '<div class="line line-' + level + '"><span class="ts">' + esc(e.ts) + '</span> <span class="level">' + level.toUpperCase() + '</span> ' + compHtml + '<span class="msg">' + esc(message) + '</span>' + metaStr + traceHtml + '</div>';
   }).join('');
-  $('log-count').textContent = '共 ' + r.total + ' 条';
+  $('log-count').textContent = '鍏?' + r.total + ' 鏉?;
   // Auto-scroll to bottom only if already near bottom
   var atBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 60;
   if (atBottom) container.scrollTop = container.scrollHeight;
@@ -1312,18 +1310,17 @@ function toggleLogAutoRefresh() {
   logAutoRefresh = !logAutoRefresh;
   if (logAutoRefresh) {
     logTimer = setInterval(loadLogs, 5000);
-    $('log-auto-refresh-btn').textContent = '⏸ 暂停自动刷新';
+    $('log-auto-refresh-btn').textContent = '鈴?鏆傚仠鑷姩鍒锋柊';
   } else {
     clearInterval(logTimer);
     logTimer = null;
-    $('log-auto-refresh-btn').textContent = '▶ 恢复自动刷新';
+    $('log-auto-refresh-btn').textContent = '鈻?鎭㈠鑷姩鍒锋柊';
   }
 }
 
 // === Init ===
 function initAll() {
-  // 获取版本号
-  api('/version').then(r => { if (r?.version) $('version-badge').textContent = 'v' + r.version; });
+  // 鑾峰彇鐗堟湰鍙?  api('/version').then(r => { if (r?.version) $('version-badge').textContent = 'v' + r.version; });
   connectWs();
   loadAgents(); loadChannels(); loadKB(); loadTools(); loadMessages(); loadMsgUsers(); loadTraces(); loadSessions(); loadLlmSettings(); loadProviders(); loadLogs();
   setInterval(() => { loadTraces(); loadSessions(); loadChannels(); loadKB(); }, 5000);

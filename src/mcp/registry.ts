@@ -18,7 +18,7 @@ class MCPRegistry {
   async callTool(name: string, args: any): Promise<string> {
     const tool = this.tools.get(name);
     if (!tool) throw new Error(`未知工具: ${name}`);
-    return tool.execute(args);
+    return await tool.execute(args);
   }
 
   toLangChainTools() {
